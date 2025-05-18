@@ -1,3 +1,4 @@
 ﻿  client.cpp
-D:\C code\arraynew\client\client.cpp(51,38): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
-  client.vcxproj -> D:\C code\arraynew\client\x64\Debug\client.exe
+E:\git-repositories\TCP-SOCKET-practice\client\client.cpp(35,16): warning C4267: “+=”: 从“size_t”转换到“int”，可能丢失数据
+E:\git-repositories\TCP-SOCKET-practice\client\client.cpp(95,38): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
+  client.vcxproj -> E:\git-repositories\TCP-SOCKET-practice\client\x64\Debug\client.exe

@@ -1,11 +1,55 @@
 //client.cpp                         --模拟客户端
+#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include<cstring>
 #include<Winsock2.h>
 #include<WS2tcpip.h>
 #pragma comment(lib, "ws2_32.lib")
+#define err(errMsg)	cout<<errMsg<<"failed,code "<<WSAGetLastError()<<" line:"<<__LINE__<<endl;
 
 using namespace std;
+
+constexpr int PORT = 5000;
+long bufSize = 10 * 1024;	//缓冲区大小
+char* buffer;
+bool recvFile(SOCKET s, const char* fileName)
+{
+	if (buffer == NULL)
+	{
+		buffer = new char[bufSize];
+		if (!buffer)
+			return false;
+	}
+	//	创建空文件
+	FILE* write = fopen(fileName, "wb");
+	if (!write)
+	{
+		perror("file write failed:\n");
+		return false;
+	}
+
+	int ret = 0;
+	int nCount;
+	while ((nCount = recv(s, buffer, bufSize, 0)) > 0)	//循环接收文件并保存
+	{
+		ret += fwrite(buffer, nCount, 1, write);
+	}
+	if (ret == 0)
+	{
+		cout << "server offline" << endl;
+	}
+	else if (ret < 0)
+	{
+		err("recv");
+		return false;
+	}
+	cout << "receive file success!" << endl;
+
+	fclose(write);
+	cout << "save file success! Filename:" << fileName << endl;
+	//system("pause");
+	return true;
+}
 
 int main()
 {
@@ -18,7 +62,7 @@ int main()
 	SOCKET client_socket = socket(AF_INET, SOCK_STREAM, 0);
 	if (client_socket == INVALID_SOCKET) {
 		// 若创建失败，打印错误并退出
-		cerr << "error" << endl;
+		cerr << "Creat SOCKET error" << endl;
 		return -1;
 	}
 
@@ -26,16 +70,16 @@ int main()
 	struct sockaddr_in target;
 	// 协议族：IPv4
 	target.sin_family = AF_INET;
-	// 目标端口号 9999（要与服务器保持一致）
-	target.sin_port = htons(9999);
+	// 目标端口号（要与服务器保持一致）
+	target.sin_port = htons(PORT);
 	// inet_pton: 将字符串形式的 IP("127.0.0.1") 转为网络字节序地址并存储到 sin_addr.s_addr
 	// 如果你的编译器或环境不支持 inet_pton，可用 inet_addr("127.0.0.1")
-	inet_pton(AF_INET, "10.196.171.75", &target.sin_addr.s_addr);
+	inet_pton(AF_INET, "10.192.137.27", &target.sin_addr.s_addr);
 	//target.sin_addr.s_addr = inet_addr("127.0.0.1");
 
 	// 连接到服务器，若失败返回 INVALID_SOCKET
 	if (connect(client_socket, (struct sockaddr*)&target, sizeof target) == INVALID_SOCKET) {
-		cerr << "error" << endl;
+		std::cerr << "Connection error, WSA " << WSAGetLastError() << std::endl;
 		closesocket(client_socket);
 		return -1;
 	}
@@ -60,6 +104,8 @@ int main()
 		}
 		// 打印服务器回显的消息
 		cout << buffer2 << endl;
+
+		//recvFile(client_socket, "./files/1.txt");
 
 	}
 	// 结束后关闭套接字

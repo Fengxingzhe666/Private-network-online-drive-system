@@ -1,11 +1,60 @@
 //server.cpp               --模拟服务器程序
+#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>        // 引入标准输入输出库
 #include <cstring>         // 引入字符串处理函数，如 strlen 等
 #include <WinSock2.h>      // Windows 平台的网络编程头文件
 #include <thread>          // C++11 的多线程库，用于 std::thread
+#include <vector>
+#include <fstream>
 #pragma comment(lib, "ws2_32.lib") // 告诉编译器链接 ws2_32.lib（Windows Sockets 库）
+#define err(errMsg)	cout<<errMsg<<"failed,code "<<WSAGetLastError()<<" line:"<<__LINE__<<endl;
 
 using namespace std;       // 使用标准命名空间
+
+constexpr int PORT = 5000;
+
+bool sendFile(SOCKET s, const char* fileName)
+{
+    FILE* read = fopen(fileName, "rb");
+    if (!read)
+    {
+        perror("file open failed:\n");//输出描述性错误信息
+        return false;
+    }
+
+    //获取文件大小
+    fseek(read, 0, SEEK_END);	//将文件位置指针移动到最后
+    long bufSize = ftell(read);	//ftell(FILE *stream)：返回给定流stream的当前文件位置，获取当前位置相对文件首的位移，位移值等于文件所含字节数
+    fseek(read, 0, SEEK_SET);	//将文件位置指针移动到开头
+    cout << "filesize:" << bufSize << endl;
+
+    //把文件读到内存中来
+    char* buffer = new char[bufSize];
+    cout << sizeof(buffer) << endl;
+    if (!buffer)
+    {
+        return false;
+    }
+
+    int nCount;
+    int ret = 0;
+    while ((nCount = fread(buffer, 1, bufSize, read)) > 0)	//循环读取文件进行传送
+    {
+        ret += send(s, buffer, nCount, 0);
+        if (ret == SOCKET_ERROR)
+        {
+            err("sendFile");
+            return false;
+        }
+    }
+    shutdown(s, SD_SEND);
+    recv(s, buffer, bufSize, 0);
+    fclose(read);
+    delete[] buffer;
+    cout << "send file success!" << " Byte:" << ret << endl;
+    //system("pause");
+    return true;
+}
 
 int main(void)
 {
@@ -26,12 +75,12 @@ int main(void)
     local.sin_family = AF_INET;
     // 绑定到本机所有可用网卡(0.0.0.0)
     local.sin_addr.s_addr = INADDR_ANY;
-    // 设置监听端口为 9999，htons 用于端口字节序转换
-    local.sin_port = htons(9999);                         
+    // 设置监听端口，htons 用于端口字节序转换
+    local.sin_port = htons(PORT);
     // 将监听套接字与本地地址结构体绑定
     if (bind(listen_socket, (struct sockaddr*)&local, sizeof local) == INVALID_SOCKET) {
         // 若返回 INVALID_SOCKET 表示绑定失败
-        cerr << "error" << endl;                           
+        cerr << "error" << endl;
         return -1;
     }
     // 启动监听，第二个参数 backlog=128 表示排队等待连接的最大队列长度
@@ -67,8 +116,10 @@ int main(void)
                 }
                 // 在服务器端打印收到的消息
                 std::cout << buffer << endl;
+                //ifstream in("./data/DSC_1015-已增强-降噪.jpg");
                 // 将同样的消息回发给客户端（回显）
                 send(client_socket, buffer, strlen(buffer), 0);
+                //sendFile(client_socket, "./DSC_1015-已增强-降噪.jpg");
             }
             // 关闭与该客户端的连接
             closesocket(client_socket);
@@ -79,16 +130,10 @@ int main(void)
     }
     return 0; // 程序结束（在这个死循环逻辑里一般不会到达这里）
 }
-
-/*
-————————————————
-版权声明：本文为博主原创文章，遵循 CC 4.0 BY - SA 版权协议，转载请附上原文出处链接和本声明。
-原文链接：https ://blog.csdn.net/2301_82023822/article/details/144704929
-*/
 /*
 代码说明
 server.cpp：
-使用 WSAStartup 初始化网络库，创建一个监听套接字并绑定到本地 9999 端口。
+使用 WSAStartup 初始化网络库，创建一个监听套接字并绑定到本地端口。
 调用 listen() 开始监听，使用 accept() 阻塞等待客户端连接。
 每当有客户端连接时，就创建一个新线程处理该客户端的消息收发，线程函数中使用 recv() 接收数据并回显给客户端。
 线程结束后，关闭与该客户端的连接。
