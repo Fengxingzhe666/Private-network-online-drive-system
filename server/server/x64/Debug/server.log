@@ -1,3 +1,0 @@
-﻿  server.cpp
-E:\git-repositories\TCP-SOCKET-practice\server\server.cpp(45,27): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
-  server.vcxproj -> E:\git-repositories\TCP-SOCKET-practice\server\x64\Debug\server.exe
