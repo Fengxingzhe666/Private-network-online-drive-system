@@ -1,0 +1,9 @@
+client/x64
+client/client
+client/.vs
+client/files/*
+server/.vs
+server/files/*
+server/x64
+server/server
+*.sln

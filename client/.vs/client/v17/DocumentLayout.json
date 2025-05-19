@@ -1,12 +1,9 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "D:\\C code\\arraynew\\client\\",
+  "WorkspaceRootPath": "E:\\git-repositories\\TCP-SOCKET-practice\\client\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{C84443E1-909F-4918-9812-6D536823AB1D}|..\\server\\server.vcxproj|D:\\C code\\arraynew\\server\\server.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2AE6E7F6-114A-4F5A-8A4D-FF70DC63F672}|client.vcxproj|D:\\C code\\arraynew\\client\\client.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{2AE6E7F6-114A-4F5A-8A4D-FF70DC63F672}|client.vcxproj|E:\\git-repositories\\TCP-SOCKET-practice\\client\\client.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{2AE6E7F6-114A-4F5A-8A4D-FF70DC63F672}|client.vcxproj|solutionrelative:client.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
@@ -26,25 +23,12 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "server.cpp",
-              "DocumentMoniker": "D:\\C code\\arraynew\\server\\server.cpp",
-              "RelativeDocumentMoniker": "..\\server\\server.cpp",
-              "ToolTip": "D:\\C code\\arraynew\\server\\server.cpp",
-              "RelativeToolTip": "..\\server\\server.cpp",
-              "ViewState": "AgIAADAAAAAAAAAAAAAAADcAAAARAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2025-03-06T01:57:18.461Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
               "Title": "client.cpp",
-              "DocumentMoniker": "D:\\C code\\arraynew\\client\\client.cpp",
+              "DocumentMoniker": "E:\\git-repositories\\TCP-SOCKET-practice\\client\\client.cpp",
               "RelativeDocumentMoniker": "client.cpp",
-              "ToolTip": "D:\\C code\\arraynew\\client\\client.cpp",
-              "RelativeToolTip": "client.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "ToolTip": "E:\\git-repositories\\TCP-SOCKET-practice\\client\\client.cpp*",
+              "RelativeToolTip": "client.cpp*",
+              "ViewState": "AgIAADYAAAAAAAAAAAAAABMAAAAdAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2025-03-06T01:53:51.012Z",
               "EditorCaption": ""
