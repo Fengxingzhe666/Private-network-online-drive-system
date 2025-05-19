@@ -76,7 +76,10 @@ int main()
 		cout << "Enter file name: ";
 		cin >> filename;
 		// 将输入的消息发送给服务器
-		send(client_socket, filename.c_str(), filename.size(), 0);
+		if (send(client_socket, filename.c_str(), filename.size(), 0) <= 0) {
+			cout << "server disconnect." << endl;
+			break;
+		}
 
 		// 用于接收服务器的回显消息
 		char buffer2[8] = { 0 };

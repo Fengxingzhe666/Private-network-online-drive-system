@@ -166,11 +166,17 @@ int main(void)
                 //分块发送
                 char buf[BUF];
                 size_t n;
+                bool send_successful = true;
                 while ((n = fread(buf, 1, sizeof buf, fp)) > 0) {
-                    if (!sendAll(client_socket, buf, n)) break;
+                    if (!sendAll(client_socket, buf, n)) {
+                        std::cout << "Failed to send file." << std::endl;
+                        send_successful = false;
+                        break; 
+                    }
                 }
                 fclose(fp);
-
+                if(send_successful)
+                    std::cout << "File " << path << " has been sended successfully." << std::endl;
 
                 //HANDLE hFile = CreateFile(L"./files/screenshot.png", GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
                 ////获取文件的大小
@@ -189,14 +195,6 @@ int main(void)
                 //    std::cout << "File sended successfully!" << std::endl;
                 //else
                 //    std::cout << "File sended failed!" << std::endl;
-                
-                //char* ok = new char[2];
-                //recv(client_socket, ok, 1, 0);
-                //if (ok == "OK") {
-                //    delete[] ok;
-                //    std::cout << "OK" << std::endl;
-                //    break;
-                //}
             }
             // 关闭与该客户端的连接
             closesocket(client_socket);
