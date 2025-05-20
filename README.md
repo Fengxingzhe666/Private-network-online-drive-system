@@ -1,5 +1,5 @@
 # 模拟私有云盘系统  
-**TCP** **SOCKET编程** **应用层文件传输协议**  
+**TCP**  **SOCKET编程**  **应用层文件传输协议**  **MySQL**  
 如果服务器端的路由器有公网ipv4，就可以直接使用其公网ipv4，但一般情况现在ISP都不会给免费的公网ipv4，这种情况下由于上层还存在更复杂的NAT，客户端直接用服务器端浏览器显示的公网ip是无法ping通的。一种方案是付费租用云服务器，将server.cpp部署在云服务器。另一种方案是搭建VPN网络点对点进行通信。  
 ## 搭建点对点的VPN网络（内网穿透）  
 使用工具Tailscale，下载地址：https://tailscale.com/download/windows  
@@ -16,6 +16,40 @@ client connects to server successfully. # 提示连接成功
 ```
 -r filename.type # 从服务器端接收文件filename.type，其中type是文件后缀
 -s filename.type # 将本地文件filename.type上传到服务器，filename.type之前必须包含该文件在客户端本地的路径
+-u account password # 向服务器请求注册账号，后边跟着密码，注意账号密码中不允许有空格，账号和密码的长度不超过20
+-i account password # 向服务器请求登录账号，后边跟着密码
 ```
--d、-i、-u命令内容待完善……  
+注意如果希望使用-u和-i功能，在服务器端必须安装MySQL，并创建一个名称为“zzk”的database，然后创建一个指定结构的表，名称为“account_password”  
+MySQL的安装见：https://github.com/Fengxingzhe666/mysql_practice  
+服务器端的MySQL简单配置过程：  
+```
+PS C:\Users\username\Desktop>mysql -uroot -p
+Enter password: ******
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 15
+Server version: 5.6.29-log MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2016, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> create database zzk;
+Query OK, 1 row affected (0.00 sec)
+
+mysql> use zzk;
+Database changed
+
+mysql> create table account_password(
+    -> account VARCHAR(20) PRIMARY KEY,
+    -> password VARCHAR(20)
+    -> );
+Query OK, 0 rows affected (0.02 sec)
+
+```
+
+-d命令内容待完善……  
 2025.5.20  
