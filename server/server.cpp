@@ -14,7 +14,7 @@
 
 using namespace std;       // 使用标准命名空间
 
-constexpr int PORT = 5000;
+constexpr int PORT = 5000;   //端口号
 constexpr size_t BUF = 64 * 1024;          // 64 KiB
 
 bool sendFile(SOCKET s, const char* fileName)
@@ -134,67 +134,72 @@ int main(void)
                 // 将同样的消息回发给客户端（回显）
                 //send(client_socket, buffer, strlen(buffer), 0);
 
-                std::string path = "./files/";
-                for (int i = 0;i < ret;++i) {
-                    path.push_back(buffer[i]);
-                }
-                FILE* fp = fopen(path.c_str(), "rb");
-                if (!fp) {
-                    std::cout << "File not found!" << std::endl;
-                    uint32_t fsize = 0;
-                    send(client_socket, reinterpret_cast<char*>(&fsize), 4, 0);
-                    continue;
-                }
-
-                fseek(fp, 0, SEEK_END);
-                uint32_t fsize = ftell(fp);
-                fseek(fp, 0, SEEK_SET);
-                uint32_t netSize = htonl(fsize);
-                if (fsize == 0) {
-                    std::cout << "Empty file detected.Refuse to send back an empty file." << std::endl;
-                    send(client_socket, reinterpret_cast<char*>(&fsize), 4, 0);
-                    continue;
-                }
-                //发送8字节信息代表文件大小
-                if (send(client_socket, reinterpret_cast<char*>(&netSize), sizeof(netSize), 0)<=0) {
-                    std::cout << "Send FileSize error." << std::endl;
-                    break;
-                }
-                char ok[3];
-                recv(client_socket, ok, 3, 0);
-                std::cout << ok << std::endl;
-                //分块发送
-                char buf[BUF];
-                size_t n;
-                bool send_successful = true;
-                while ((n = fread(buf, 1, sizeof buf, fp)) > 0) {
-                    if (!sendAll(client_socket, buf, n)) {
-                        std::cout << "Failed to send file." << std::endl;
-                        send_successful = false;
-                        break; 
+                
+                std::string control_msg(3, '/0');
+                for (int i = 0;i < 3;++i)
+                    control_msg[i] = buffer[i];
+                if (control_msg == "-r ") {
+                    std::string path = "./files/";
+                    for (int i = 3;i < ret;++i)
+                        path.push_back(buffer[i]);
+                    FILE* fp = fopen(path.c_str(), "rb");
+                    if (!fp) {
+                        std::cout << "File not found!" << std::endl;
+                        uint32_t fsize = 0;
+                        send(client_socket, reinterpret_cast<char*>(&fsize), 4, 0);
+                        continue;
                     }
-                }
-                fclose(fp);
-                if(send_successful)
-                    std::cout << "File " << path << " has been sended successfully." << std::endl;
 
-                //HANDLE hFile = CreateFile(L"./files/screenshot.png", GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-                ////获取文件的大小
-                //LARGE_INTEGER fileSize;
-                //GetFileSizeEx(hFile, &fileSize);
-                //size_t size_in_byte = fileSize.QuadPart;//文件的大小（单位：字节）
-                //std::string size_str = std::to_string(size_in_byte);
-                ////发送8字节信息代表文件大小
-                //send(client_socket, size_str.c_str(), 8, 0);
-                //char ok[3] = {};
-                //recv(client_socket, ok, 3, 0);
-                //std::cout << ok << std::endl;
-                ////发送文件
-                //bool file_successful = TransmitFile(client_socket, hFile, 0, 64000, NULL, NULL, 0);
-                //if (file_successful)
-                //    std::cout << "File sended successfully!" << std::endl;
-                //else
-                //    std::cout << "File sended failed!" << std::endl;
+                    fseek(fp, 0, SEEK_END);
+                    uint32_t fsize = ftell(fp);
+                    fseek(fp, 0, SEEK_SET);
+                    uint32_t netSize = htonl(fsize);
+                    if (fsize == 0) {
+                        std::cout << "Empty file detected.Refuse to send back an empty file." << std::endl;
+                        send(client_socket, reinterpret_cast<char*>(&fsize), 4, 0);
+                        continue;
+                    }
+                    //发送8字节信息代表文件大小
+                    if (send(client_socket, reinterpret_cast<char*>(&netSize), sizeof(netSize), 0) <= 0) {
+                        std::cout << "Send FileSize error." << std::endl;
+                        break;
+                    }
+                    char ok[3];
+                    recv(client_socket, ok, 3, 0);
+                    std::cout << ok << std::endl;
+                    //分块发送
+                    char buf[BUF];
+                    size_t n;
+                    bool send_successful = true;
+                    while ((n = fread(buf, 1, sizeof buf, fp)) > 0) {
+                        if (!sendAll(client_socket, buf, n)) {
+                            std::cout << "Failed to send file." << std::endl;
+                            send_successful = false;
+                            break;
+                        }
+                    }
+                    fclose(fp);
+                    if (send_successful)
+                        std::cout << "File " << path << " has been sended successfully." << std::endl;
+                    //HANDLE hFile = CreateFile(L"./files/screenshot.png", GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+                    ////获取文件的大小
+                    //LARGE_INTEGER fileSize;
+                    //GetFileSizeEx(hFile, &fileSize);
+                    //size_t size_in_byte = fileSize.QuadPart;//文件的大小（单位：字节）
+                    //std::string size_str = std::to_string(size_in_byte);
+                    ////发送8字节信息代表文件大小
+                    //send(client_socket, size_str.c_str(), 8, 0);
+                    //char ok[3] = {};
+                    //recv(client_socket, ok, 3, 0);
+                    //std::cout << ok << std::endl;
+                    ////发送文件
+                    //bool file_successful = TransmitFile(client_socket, hFile, 0, 64000, NULL, NULL,   0);
+                    //if (file_successful)
+                    //    std::cout << "File sended successfully!" << std::endl;
+                    //else
+                    //    std::cout << "File sended failed!" << std::endl;
+                }
+                
             }
             // 关闭与该客户端的连接
             closesocket(client_socket);

@@ -2,21 +2,22 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <fstream>
-#include<cstring>
+//#include<cstring>
 #include <string>
 #include<Winsock2.h>
 #include<WS2tcpip.h>
+#include "../ProgressBar.h"
 #pragma comment(lib, "ws2_32.lib")
 #define err(errMsg)	cout<<errMsg<<"failed,code "<<WSAGetLastError()<<" line:"<<__LINE__<<endl;
 
-using namespace std;
-
+using std::string;
 constexpr int PORT = 5000;
 constexpr size_t BUF = 64 * 1024;          // 64 KiB
 
 bool recvAll(SOCKET s, char* p, size_t len,const string& filename) {
 	std::ofstream file("./files/" + filename, std::ios::out | std::ios::binary);
-	while (len > 0) {
+	size_t remain_byte = len;
+	while (remain_byte > 0) {
 		int n = recv(s, p, BUF, 0);
 		if (n == -1) {
 			int wsaErr = WSAGetLastError();
@@ -25,7 +26,8 @@ bool recvAll(SOCKET s, char* p, size_t len,const string& filename) {
 		if (n <= 0)
 			return false;
 		file.write(p, n);
-		len -= n;
+		remain_byte -= n;
+		showProgressBar(len - remain_byte, len);
 	}
 	file.close();
 	return true;
@@ -42,7 +44,7 @@ int main()
 	SOCKET client_socket = socket(AF_INET, SOCK_STREAM, 0);
 	if (client_socket == INVALID_SOCKET) {
 		// 若创建失败，打印错误并退出
-		cerr << "Creat SOCKET error" << endl;
+		std::cerr << "Creat SOCKET error" << std::endl;
 		return -1;
 	}
 
@@ -54,8 +56,8 @@ int main()
 	target.sin_port = htons(PORT);
 	// inet_pton: 将字符串形式的 IP("127.0.0.1") 转为网络字节序地址并存储到 sin_addr.s_addr
 	string ip_str;
-	cout << "Enter the server's ip address,such as 127.0.0.1 on this device itself." << std::endl;
-	cin >> ip_str;
+	std::cout << "Enter the server's ip address,such as 127.0.0.1 on this device itself." << std::endl;
+	getline(std::cin, ip_str);
 	// 如果你的编译器或环境不支持 inet_pton，可用 inet_addr("127.0.0.1")
 	inet_pton(AF_INET, ip_str.c_str(), &target.sin_addr.s_addr);
 	//target.sin_addr.s_addr = inet_addr("127.0.0.1");
@@ -66,40 +68,45 @@ int main()
 		closesocket(client_socket);
 		return -1;
 	}
-	cout << "client connects to server successfully." << endl;
+	std::cout << "client connects to server successfully." << std::endl;
 
 	// 进入循环，不断从控制台输入消息并发送给服务器
 	while (true) {
-		// 用于存储用户输入的消息
-		//char buffer1[1024] = { 0 };
-		string filename;
-		cout << "Enter file name: ";
-		cin >> filename;
+		string sending_str, control_msg,filename;
+		getline(std::cin,sending_str);
+		control_msg = sending_str.substr(0, 3);
+		filename = sending_str.substr(3);
 		// 将输入的消息发送给服务器
-		if (send(client_socket, filename.c_str(), filename.size(), 0) <= 0) {
-			cout << "server disconnect." << endl;
+		if (send(client_socket, sending_str.c_str(), sending_str.size(), 0) <= 0) {
+			std::cout << "server disconnect." << std::endl;
 			break;
 		}
-
-		// 用于接收服务器的回显消息
-		char buffer2[8] = { 0 };
-		uint32_t NetSize = 0;
-		// 从服务器接收数据，当服务器断开或出错时，返回值 <= 0
-		if (recv(client_socket, reinterpret_cast<char*>(&NetSize), sizeof(NetSize), 0) <= 0) {
-			cout << "server disconnect." << endl;
-			break;
+		// 客户端希望接收文件信息
+		if (control_msg == "-r ") {
+			// 接收服务器的回显消息（文件大小）
+			char buffer2[8] = { 0 };
+			uint32_t NetSize = 0;
+			// 从服务器接收数据，当服务器断开或出错时，返回值 <= 0
+			if (recv(client_socket, reinterpret_cast<char*>(&NetSize), sizeof(NetSize), 0) <= 0) {
+				std::cout << "server disconnect." << std::endl;
+				break;
+			}
+			uint32_t FileSize = ntohl(NetSize);
+			std::cout << "File size: " << FileSize << " byte(s)" << std::endl;
+			if (FileSize == 0) {
+				std::cout << "Error! Server could not found the file. Or server refused to send an empty file." << std::endl;
+				continue;
+			}
+			send(client_socket, "OK\0", 3, 0);
+			char fp[BUF] = {};
+			if (recvAll(client_socket, fp, FileSize, filename))
+				std::cout << std::endl << "Receive file Successfully." << std::endl;
 		}
+		// 客户端希望发送文件信息
+		else if (control_msg == "-s ") {
+			
 
-		uint32_t FileSize = ntohl(NetSize);
-		cout << "File size: " << FileSize <<" byte(s)" << endl;
-		if (FileSize == 0) {
-			cout << "Error! Server could not found the file. Or server refused to send an empty file." << endl;
-			continue;
 		}
-		send(client_socket, "OK\0", 3, 0);
-		char fp[BUF] = {};
-		if (recvAll(client_socket, fp, FileSize,filename))
-			std::cout << "Receive file Successfully." << std::endl;
 	}
 	// 结束后关闭套接字
 	closesocket(client_socket);
