@@ -142,6 +142,35 @@ int main()
 				std::cout << "Server refused this file." << std::endl;
 			}
 		}
+		//客户端希望注册账号
+		else if (control_msg == "-u ") {
+			// 将输入的消息发送给服务器
+			if (send(client_socket, sending_str.c_str(), sending_str.size(), 0) <= 0) {
+				std::cout << "server disconnect." << std::endl;
+				break;
+			}
+			char buffer_sql[100] = { 0 };
+			if (recv(client_socket, buffer_sql, 100, 0) <= 0) {
+				std::cout << "Failed to receive ." << std::endl;
+				break;
+			}
+			std::cout << buffer_sql << std::endl;
+		}
+		//客户端希望登录账号
+		else if (control_msg == "-i ") {
+			// 将输入的消息发送给服务器
+			if (send(client_socket, sending_str.c_str(), sending_str.size(), 0) <= 0) {
+				std::cout << "server disconnect." << std::endl;
+				break;
+			}
+			// 接收服务器的反馈
+			char buffer_sql[100] = { 0 };
+			if (recv(client_socket, buffer_sql, 100, 0) <= 0) {
+				std::cout << "Failed to receive ." << std::endl;
+				break;
+			}
+			std::cout << buffer_sql << std::endl;
+		}
 	}
 	// 结束后关闭套接字
 	closesocket(client_socket);

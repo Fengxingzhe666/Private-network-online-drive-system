@@ -3,22 +3,31 @@
 #include <iostream>        // 引入标准输入输出库
 #include <cstring>         // 引入字符串处理函数，如 strlen 等
 #include <WinSock2.h>      // Windows 平台的网络编程头文件
+#include <mysql.h>
 #include <thread>          // C++11 的多线程库，用于 std::thread
 #include <vector>
 #include <string>
 #include <fstream>
 #include <mswsock.h>
 #include <stdio.h>
-#include <memory>          // 智能指针
+//#include <memory>          // 智能指针
+
 #include "../handleAll.h"
 #pragma comment(lib, "ws2_32.lib") // 告诉编译器链接 ws2_32.lib（Windows Sockets 库）
-#pragma comment(lib, "Mswsock.lib")// TransmitFile
+//#pragma comment(lib, "Mswsock.lib")// TransmitFile
 #define err(errMsg)	cout<<errMsg<<"failed,code "<<WSAGetLastError()<<" line:"<<__LINE__<<endl;
 
 using namespace std;       // 使用标准命名空间
 
 constexpr int PORT = 5000;   //端口号
 constexpr uint32_t SIZELIMIT = 1610612736;  //接收文件大小限制
+
+const char* host = "127.0.0.1";
+const char* user = "root";
+const char* pw = "123456";
+const char* databse_name = "zzk";
+const std::string table_name = "account_password";
+//const int MYSQL_PORT = 3306;
 
 int main(void)
 {
@@ -166,6 +175,109 @@ int main(void)
                     //std::unique_ptr<char> fp(new char[BUF]);
                     if (recvAll(client_socket, fp, FileSize, filename_pure))
                         std::cout << std::endl << "Receive file Successfully." << std::endl;
+                }
+                else if (control_msg == "-u ") {
+                    std::string account, password;
+                    bool space = false;
+                    for (int i = 3;i < ret;++i) {
+                        if (buffer[i] == ' '){
+                            space = true;
+                            continue;
+                        }
+                        if (space)
+                            password.push_back(buffer[i]);
+                        else
+                            account.push_back(buffer[i]);
+                    }
+                    //连接服务器本地的MySQL数据库
+                    //初始化数据库
+                    MYSQL* con = mysql_init(NULL);
+                    //连接
+                    if (!mysql_real_connect(con, host, user, pw, databse_name, MYSQL_PORT, NULL, 0)) {
+                        fprintf_s(stderr, "Failed to connect to database. Error: %s\n", mysql_error(con));
+                        send(client_socket, mysql_error(con), 100, 0);
+                        break;
+                    }
+                    //设置连接的默认字符是 utf8，原始默认是 latin1，不使用可能会导致插入的中文是乱码
+                    mysql_set_character_set(con, "utf-8");
+
+                    std::string order = "insert into " + table_name + " values ('" + account + "','" + password + "');";
+                    //执行命令
+                    if (mysql_query(con, order.c_str())) {
+                        //如果执行失败就打印
+                        fprintf_s(stderr, "Error: %s\n", mysql_error(con));
+                        send(client_socket, mysql_error(con), 100, 0);
+                        continue;
+                    }
+                    std::string signup_succ = "Sign up successfully.";
+                    if (send(client_socket, signup_succ.c_str(), signup_succ.size(), 0) <= 0) {
+                        std::cout << "Connection failed." << std::endl;
+                        break;
+                    }
+                    std::cout << signup_succ << std::endl;
+                }
+                // 客户端请求登录
+                else if (control_msg == "-i ") {
+                    std::string account, password;
+                    bool space = false;
+                    for (int i = 3;i < ret;++i) {
+                        if (buffer[i] == ' ') {
+                            space = true;
+                            continue;
+                        }
+                        if (space)
+                            password.push_back(buffer[i]);
+                        else
+                            account.push_back(buffer[i]);
+                    }
+                    //连接服务器本地的MySQL数据库
+                    //初始化数据库
+                    MYSQL* con = mysql_init(NULL);
+                    //连接
+                    if (!mysql_real_connect(con, host, user, pw, databse_name, MYSQL_PORT, NULL, 0)) {
+                        fprintf_s(stderr, "Failed to connect to database. Error: %s\n", mysql_error(con));
+                        send(client_socket, mysql_error(con), 100, 0);
+                        break;
+                    }
+                    mysql_set_character_set(con, "utf-8");
+                    std::string order = "select password from account_password where account='" + account + "';";
+                    if (mysql_query(con, order.c_str())) {
+                        //如果执行失败就打印
+                        fprintf_s(stderr, "Error: %s\n", mysql_error(con));
+                        if (send(client_socket, mysql_error(con), 100, 0) <= 0) {
+                            std::cout << "Failed to send MySQL error code message." << std::endl;
+                            break;
+                        }
+                        continue;
+                    }
+                    //保存查询结果
+                    MYSQL_RES* res = mysql_store_result(con);
+                    my_ulonglong row = mysql_num_rows(res);
+                    unsigned int column = mysql_num_fields(res);
+                    std::string answer;//该账号的密码
+                    MYSQL_ROW line = mysql_fetch_row(res);
+                    //指针为空说明账号不存在
+                    if (!line) {
+                        const std::string account_no = "The account you input does not exist.";
+                        if (send(client_socket, account_no.c_str(), account_no.size(), 0) <= 0) {
+                            std::cout << "Failed to send MySQL error code message." << std::endl;
+                            break;
+                        }
+                    }
+                    else {
+                        answer += line[0];
+                        std::string correct;
+                        if (answer == password) {
+                            correct = "Sign in successfully.";
+                        }
+                        else {
+                            correct = "Incorrect password.";
+                        }
+                        if (send(client_socket, correct.c_str(), correct.size(), 0) <= 0) {
+                            std::cout << "Failed to send MySQL error code message." << std::endl;
+                            break;
+                        }
+                    }
                 }
             }
             // 关闭与该客户端的连接
