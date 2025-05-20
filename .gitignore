@@ -2,10 +2,10 @@ client/x64
 client/client
 client/.vs
 client/files/*
-!client/files/
+!client/files/README.md
 server/.vs
 server/files/*
-!server/files/
+!server/files/README.md
 server/x64
 server/server
 *.sln
