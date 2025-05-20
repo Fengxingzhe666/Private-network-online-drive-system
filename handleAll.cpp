@@ -20,11 +20,26 @@ bool recvAll(SOCKET s, char* p, size_t len, const std::string& filename) {
 }
 
 bool sendAll(SOCKET s, const char* p, size_t len) {
-	while (len) {
+	size_t remain_byte = len;
+	while (remain_byte) {
 		int n = send(s, p, static_cast<int>(len), 0);
 		if (n <= 0)
 			return false;
-		p += n; len -= n;
+		p += n; remain_byte -= n;
+		showProgressBar(len - remain_byte, len);
 	}
 	return true;
+}
+
+std::string getfilename(const std::string& str) {
+	std::string filename;
+	int last = 0;
+	for (int i = str.size() - 1;i >= 0;--i) {
+		if (str[i] == '/') {
+			last = i + 1;
+			break;
+		}
+	}
+	filename.insert(filename.begin(), str.begin() + last, str.end());
+	return filename;
 }

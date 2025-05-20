@@ -8,6 +8,7 @@
 #include <string>
 #include <fstream>
 #include <mswsock.h>
+#include <stdio.h>
 #include <memory>          // 智能指针
 #include "../handleAll.h"
 #pragma comment(lib, "ws2_32.lib") // 告诉编译器链接 ws2_32.lib（Windows Sockets 库）
@@ -17,6 +18,7 @@
 using namespace std;       // 使用标准命名空间
 
 constexpr int PORT = 5000;   //端口号
+constexpr uint32_t SIZELIMIT = 1610612736;  //接收文件大小限制
 
 int main(void)
 {
@@ -77,11 +79,7 @@ int main(void)
                     break;
                 }
                 // 在服务器端打印收到的消息
-                std::cout << buffer << endl;
-                //ifstream in("./data/DSC_1015-已增强-降噪.jpg");
-                // 将同样的消息回发给客户端（回显）
-                //send(client_socket, buffer, strlen(buffer), 0);
-
+                std::cout << buffer << std::endl;
                 
                 std::string control_msg(3, '/0');
                 for (int i = 0;i < 3;++i)
@@ -104,7 +102,10 @@ int main(void)
                     uint32_t netSize = htonl(fsize);
                     if (fsize == 0) {
                         std::cout << "Empty file detected.Refuse to send back an empty file." << std::endl;
-                        send(client_socket, reinterpret_cast<char*>(&fsize), 4, 0);
+                        if (send(client_socket, reinterpret_cast<char*>(&fsize), 4, 0) <= 0) {
+                            std::cout << "Send FileSize error." << std::endl;
+                            break;
+                        }
                         continue;
                     }
                     //发送8字节信息代表文件大小
@@ -113,7 +114,10 @@ int main(void)
                         break;
                     }
                     char ok[3];
-                    recv(client_socket, ok, 3, 0);
+                    if (recv(client_socket, ok, 3, 0) <= 0) {
+                        std::cout << "Failed to receive OK message." << std::endl;
+                        break;
+                    }
                     std::cout << ok << std::endl;
                     //分块发送
                     char buf[BUF];
@@ -129,7 +133,39 @@ int main(void)
                     }
                     fclose(fp);
                     if (send_successful)
-                        std::cout << "File " << path << " has been sended successfully." << std::endl;
+                        std::cout << std::endl << "File " << path << " has been sended successfully." << std::endl;
+                }
+                else if (control_msg == "-s ") {
+                    // 接收客户端的消息（文件大小）
+                    uint32_t NetSize = 0;
+                    if (recv(client_socket, reinterpret_cast<char*>(&NetSize), sizeof(NetSize), 0) <= 0) {
+                        std::cout << "Failed to receive FileSize." << std::endl;
+                        break;
+                    }
+                    uint32_t FileSize = ntohl(NetSize);
+                    if (FileSize <= SIZELIMIT) {
+                        if (send(client_socket, "Y", 1, 0) <= 0) {
+                            std::cout << "Failed to send confirm message." << std::endl;
+                            break;
+                        }
+                    }
+                    else {
+                        if (send(client_socket, "N", 1, 0) <= 0) {
+                            std::cout << "Failed to send confirm message." << std::endl;
+                            break;
+                        }
+                    }
+                    //路径转换
+                    std::string filename, filename_pure;
+                    for (int i = 4;i < ret;++i) {
+                        filename.push_back(buffer[i]);
+                    }
+                    filename_pure = getfilename(filename);
+                    //path = "./files/" + filename_pure;
+                    char fp[BUF] = {};
+                    //std::unique_ptr<char> fp(new char[BUF]);
+                    if (recvAll(client_socket, fp, FileSize, filename_pure))
+                        std::cout << std::endl << "Receive file Successfully." << std::endl;
                 }
             }
             // 关闭与该客户端的连接

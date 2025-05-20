@@ -57,15 +57,14 @@ int main()
 		getline(std::cin,sending_str);
 		control_msg = sending_str.substr(0, 3);
 		filename = sending_str.substr(3);
-		// 将输入的消息发送给服务器
-		if (send(client_socket, sending_str.c_str(), sending_str.size(), 0) <= 0) {
-			std::cout << "server disconnect." << std::endl;
-			break;
-		}
 		// 客户端希望接收文件信息
 		if (control_msg == "-r ") {
+			// 将输入的消息发送给服务器
+			if (send(client_socket, sending_str.c_str(), sending_str.size(), 0) <= 0) {
+				std::cout << "server disconnect." << std::endl;
+				break;
+			}
 			// 接收服务器的回显消息（文件大小）
-			char buffer2[8] = { 0 };
 			uint32_t NetSize = 0;
 			// 从服务器接收数据，当服务器断开或出错时，返回值 <= 0
 			if (recv(client_socket, reinterpret_cast<char*>(&NetSize), sizeof(NetSize), 0) <= 0) {
@@ -86,8 +85,62 @@ int main()
 		}
 		// 客户端希望发送文件信息
 		else if (control_msg == "-s ") {
-			
-
+			FILE* fp = fopen(filename.c_str(), "rb");
+			if (!fp) {
+				std::cout << "File not found!" << std::endl;
+				continue;
+			}
+			fseek(fp, 0, SEEK_END);
+			uint32_t fsize = ftell(fp);
+			fseek(fp, 0, SEEK_SET);
+			uint32_t netSize = htonl(fsize);
+			// 将输入的消息发送给服务器
+			if (send(client_socket, sending_str.c_str(), sending_str.size(), 0) <= 0) {
+				std::cout << "server disconnect." << std::endl;
+				break;
+			}
+			//发送文件大小
+			if (send(client_socket, reinterpret_cast<char*>(&netSize), sizeof(netSize), 0) <= 0) {
+				std::cout << "Send FileSize error." << std::endl;
+				break;
+			}
+			char a[1] = {};
+			//接收服务器回传的确认信号（Y或者N）
+			if (recv(client_socket, a, 1, 0) <= 0) {
+				std::cout << "Failed to receive confirmation message from server." << std::endl;
+				break;
+			}
+			//服务器确认可以发送
+			if (a[0] == 'y' || a[0] == 'Y') {
+				/*std::string filename_pure = getfilename(filename);
+				if(send(client_socket,filename_pure.c_str(), filename_pure.size(),0) <= 0){
+					std::cout << "Failed to send filename to server." << std::endl;
+					break;
+				}
+				char ok[3];
+				if (recv(client_socket, ok, 3, 0) <= 0) {
+					std::cout << "Failed to receive OK message from server." << std::endl;
+					break;
+				}*/
+				// 分块发送
+				char buf[BUF];
+				size_t n;
+				bool send_successful = true;
+				while ((n = fread(buf, 1, sizeof buf, fp)) > 0) {
+					if (!sendAll(client_socket, buf, n)) {
+						std::cout << "Failed to send file." << std::endl;
+						send_successful = false;
+						break;
+					}
+				}
+				fclose(fp);
+				if (send_successful)
+					std::cout << std::endl << "File " << filename << " has been sended successfully." << std::endl;
+			}
+			//服务器拒绝接收文件
+			else {
+				std::cout << "Server refused this file." << std::endl;
+			}
 		}
 	}
 	// 结束后关闭套接字
