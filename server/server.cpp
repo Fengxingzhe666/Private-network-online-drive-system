@@ -8,6 +8,8 @@
 #include <string>
 #include <fstream>
 #include <mswsock.h>
+#include <memory>          // 智能指针
+#include "../handleAll.h"
 #pragma comment(lib, "ws2_32.lib") // 告诉编译器链接 ws2_32.lib（Windows Sockets 库）
 #pragma comment(lib, "Mswsock.lib")// TransmitFile
 #define err(errMsg)	cout<<errMsg<<"failed,code "<<WSAGetLastError()<<" line:"<<__LINE__<<endl;
@@ -15,60 +17,6 @@
 using namespace std;       // 使用标准命名空间
 
 constexpr int PORT = 5000;   //端口号
-constexpr size_t BUF = 64 * 1024;          // 64 KiB
-
-bool sendFile(SOCKET s, const char* fileName)
-{
-    FILE* read = fopen(fileName, "rb");
-    if (!read)
-    {
-        perror("file open failed:\n");//输出描述性错误信息
-        return false;
-    }
-
-    //获取文件大小
-    fseek(read, 0, SEEK_END);	//将文件位置指针移动到最后
-    long bufSize = ftell(read);	//ftell(FILE *stream)：返回给定流stream的当前文件位置，获取当前位置相对文件首的位移，位移值等于文件所含字节数
-    fseek(read, 0, SEEK_SET);	//将文件位置指针移动到开头
-    cout << "filesize:" << bufSize << endl;
-
-    //把文件读到内存中来
-    char* buffer = new char[bufSize];
-    cout << sizeof(buffer) << endl;
-    if (!buffer)
-    {
-        return false;
-    }
-
-    int nCount;
-    int ret = 0;
-    while ((nCount = fread(buffer, 1, bufSize, read)) > 0)	//循环读取文件进行传送
-    {
-        ret += send(s, buffer, nCount, 0);
-        if (ret == SOCKET_ERROR)
-        {
-            err("sendFile");
-            return false;
-        }
-    }
-    shutdown(s, SD_SEND);
-    recv(s, buffer, bufSize, 0);
-    fclose(read);
-    delete[] buffer;
-    cout << "send file success!" << " Byte:" << ret << endl;
-    //system("pause");
-    return true;
-}
-
-bool sendAll(SOCKET s, const char* p, size_t len) {
-    while (len) {
-        int n = send(s, p, static_cast<int>(len), 0);
-        if (n <= 0)
-            return false;
-        p += n; len -= n;
-    }
-    return true;
-}
 
 int main(void)
 {
@@ -169,6 +117,7 @@ int main(void)
                     std::cout << ok << std::endl;
                     //分块发送
                     char buf[BUF];
+                    //std::unique_ptr<char> buf(new char[BUF]);
                     size_t n;
                     bool send_successful = true;
                     while ((n = fread(buf, 1, sizeof buf, fp)) > 0) {
@@ -181,25 +130,7 @@ int main(void)
                     fclose(fp);
                     if (send_successful)
                         std::cout << "File " << path << " has been sended successfully." << std::endl;
-                    //HANDLE hFile = CreateFile(L"./files/screenshot.png", GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-                    ////获取文件的大小
-                    //LARGE_INTEGER fileSize;
-                    //GetFileSizeEx(hFile, &fileSize);
-                    //size_t size_in_byte = fileSize.QuadPart;//文件的大小（单位：字节）
-                    //std::string size_str = std::to_string(size_in_byte);
-                    ////发送8字节信息代表文件大小
-                    //send(client_socket, size_str.c_str(), 8, 0);
-                    //char ok[3] = {};
-                    //recv(client_socket, ok, 3, 0);
-                    //std::cout << ok << std::endl;
-                    ////发送文件
-                    //bool file_successful = TransmitFile(client_socket, hFile, 0, 64000, NULL, NULL,   0);
-                    //if (file_successful)
-                    //    std::cout << "File sended successfully!" << std::endl;
-                    //else
-                    //    std::cout << "File sended failed!" << std::endl;
                 }
-                
             }
             // 关闭与该客户端的连接
             closesocket(client_socket);

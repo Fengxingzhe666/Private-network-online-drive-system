@@ -2,36 +2,17 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <fstream>
-//#include<cstring>
 #include <string>
+#include <memory>     //÷«ƒ‹÷∏’Î
 #include<Winsock2.h>
 #include<WS2tcpip.h>
 #include "../ProgressBar.h"
+#include "../handleAll.h"
 #pragma comment(lib, "ws2_32.lib")
-#define err(errMsg)	cout<<errMsg<<"failed,code "<<WSAGetLastError()<<" line:"<<__LINE__<<endl;
+#define err(errMsg)	std::cout<<errMsg<<"failed,code "<<WSAGetLastError()<<" line:"<<__LINE__<<std::endl;
 
 using std::string;
 constexpr int PORT = 5000;
-constexpr size_t BUF = 64 * 1024;          // 64 KiB
-
-bool recvAll(SOCKET s, char* p, size_t len,const string& filename) {
-	std::ofstream file("./files/" + filename, std::ios::out | std::ios::binary);
-	size_t remain_byte = len;
-	while (remain_byte > 0) {
-		int n = recv(s, p, BUF, 0);
-		if (n == -1) {
-			int wsaErr = WSAGetLastError();
-			std::cerr << "Receive failed, code " << wsaErr << "\n";
-		}
-		if (n <= 0)
-			return false;
-		file.write(p, n);
-		remain_byte -= n;
-		showProgressBar(len - remain_byte, len);
-	}
-	file.close();
-	return true;
-}
 
 int main()
 {
@@ -99,6 +80,7 @@ int main()
 			}
 			send(client_socket, "OK\0", 3, 0);
 			char fp[BUF] = {};
+			//std::unique_ptr<char> fp(new char[BUF]);
 			if (recvAll(client_socket, fp, FileSize, filename))
 				std::cout << std::endl << "Receive file Successfully." << std::endl;
 		}

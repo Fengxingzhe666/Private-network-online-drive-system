@@ -1,0 +1,17 @@
+//HANDLE hFile = CreateFile(L"./files/screenshot.png", GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+////获取文件的大小
+//LARGE_INTEGER fileSize;
+//GetFileSizeEx(hFile, &fileSize);
+//size_t size_in_byte = fileSize.QuadPart;//文件的大小（单位：字节）
+//std::string size_str = std::to_string(size_in_byte);
+////发送8字节信息代表文件大小
+//send(client_socket, size_str.c_str(), 8, 0);
+//char ok[3] = {};
+//recv(client_socket, ok, 3, 0);
+//std::cout << ok << std::endl;
+////发送文件
+//bool file_successful = TransmitFile(client_socket, hFile, 0, 64000, NULL, NULL,   0);
+//if (file_successful)
+//    std::cout << "File sended successfully!" << std::endl;
+//else
+//    std::cout << "File sended failed!" << std::endl;
