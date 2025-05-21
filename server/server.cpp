@@ -91,7 +91,7 @@ int main(void)
                 // 在服务器端打印收到的消息
                 std::cout << buffer << std::endl;
                 
-                std::string control_msg(3, '/0');
+                std::string control_msg(3, '\0');
                 for (int i = 0;i < 3;++i)
                     control_msg[i] = buffer[i];
                 if (control_msg == "-r ") {

@@ -67,13 +67,13 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 ```
 如果是服务端程序，则在命令行进入server文件夹，然后输入以下编译指令进行编译：  
 ```
-g++ server.cpp ../ProgressBar.h ../ProgressBar.cpp ../handleAll.h ../handleAll.cpp -o server.exe -I "C:/Program Files/MySQL/MySQL Server 5.6/include" -L "C:/Program Files/MySQL/MySQL Server 5.6/lib"  -lmysql -lws2_32
+g++ server.cpp ../ProgressBar.h ../ProgressBar.cpp ../handleAll.h ../handleAll.cpp ../mkdir.h ../mkdir.cpp -o server.exe -I "C:/Program Files/MySQL/MySQL Server 5.6/include" -L "C:/Program Files/MySQL/MySQL Server 5.6/lib"  -lmysql -lws2_32
 ```
 g++会在server目录中编译出server.exe文件，运行这个exe文件，服务端就开始运行了。
 
 如果是客户端程序，则在命令行进入client文件夹，然后输入以下编译指令进行编译：  
 ```
-g++ client.cpp ../ProgressBar.h ../ProgressBar.cpp ../handleAll.h ../handleAll.cpp -o client.exe -lws2_32
+g++ client.cpp ../ProgressBar.h ../ProgressBar.cpp ../handleAll.h ../handleAll.cpp ../mkdir.h ../mkdir.cpp -o client.exe -lws2_32
 ```
 g++会在client目录中编译出client.exe文件，运行这个exe文件，客户端就开始运行了。 
 
