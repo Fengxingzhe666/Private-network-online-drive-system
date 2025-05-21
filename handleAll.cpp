@@ -19,6 +19,27 @@ bool recvAll(SOCKET s, char* p, size_t len, const std::string& filename) {
 	return true;
 }
 
+bool recvAll(SOCKET s, char* p, size_t len, const std::string& filename, const std::string& account) {
+	std::string path = "./files/" + account + "/" + filename;
+	MkDir("./files/" + account);
+	std::ofstream file(path, std::ios::out | std::ios::binary);
+	size_t remain_byte = len;
+	while (remain_byte > 0) {
+		int n = recv(s, p, BUF, 0);
+		if (n == -1) {
+			int wsaErr = WSAGetLastError();
+			std::cerr << "Receive failed, code " << wsaErr << "\n";
+		}
+		if (n <= 0)
+			return false;
+		file.write(p, n);
+		remain_byte -= n;
+		showProgressBar(len - remain_byte, len);
+	}
+	file.close();
+	return true;
+}
+
 bool sendAll(SOCKET s, const char* p, size_t len) {
 	size_t remain_byte = len;
 	while (remain_byte) {
@@ -30,7 +51,7 @@ bool sendAll(SOCKET s, const char* p, size_t len) {
 	}
 	return true;
 }
-
+//从一长串路径字符串中提取文件名称（包含后缀）
 std::string getfilename(const std::string& str) {
 	std::string filename;
 	int last = 0;
@@ -42,4 +63,16 @@ std::string getfilename(const std::string& str) {
 	}
 	filename.insert(filename.begin(), str.begin() + last, str.end());
 	return filename;
+}
+// 删除文件
+bool deleteFile(const std::string& filename) {
+	int result = std::remove(filename.c_str());
+	if (result == 0) {
+		std::cout << "File " << filename << "has been deleted successfully." << std::endl;
+		return true;
+	}
+	else {
+		std::cerr << "Fail to delete file" << std::endl;
+		return false;
+	}
 }

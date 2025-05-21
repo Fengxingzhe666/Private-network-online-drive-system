@@ -76,6 +76,7 @@ int main(void)
         std::cout << "client connect: " << client_socket << endl;
         // 创建一个线程来处理该客户端的收发数据
         thread th([](SOCKET client_socket) {
+            std::string account_login;//已登录的账户名称，初始为空
             while (true) {
                 // 数据缓冲区，初始化为 0
                 char buffer[1024] = { 0 };
@@ -94,28 +95,40 @@ int main(void)
                 for (int i = 0;i < 3;++i)
                     control_msg[i] = buffer[i];
                 if (control_msg == "-r ") {
-                    std::string path = "./files/";
+                    if (account_login.empty()) {
+                        if (send(client_socket, "L", 1, 0) <= 0) {
+                            std::cout << "Failed to send confirm message 'L'." << std::endl;
+                            break;
+                        }
+                        continue;
+                    }
+                    std::string path = "./files/" + account_login + "/";
                     for (int i = 3;i < ret;++i)
                         path.push_back(buffer[i]);
                     FILE* fp = fopen(path.c_str(), "rb");
                     if (!fp) {
                         std::cout << "File not found!" << std::endl;
-                        uint32_t fsize = 0;
-                        send(client_socket, reinterpret_cast<char*>(&fsize), 4, 0);
+                        if (send(client_socket, "N", 1, 0) <= 0) {
+                            std::cout << "Failed to send confirm message 'N'." << std::endl;
+                            break;
+                        }
                         continue;
                     }
-
                     fseek(fp, 0, SEEK_END);
                     uint32_t fsize = ftell(fp);
                     fseek(fp, 0, SEEK_SET);
                     uint32_t netSize = htonl(fsize);
                     if (fsize == 0) {
                         std::cout << "Empty file detected.Refuse to send back an empty file." << std::endl;
-                        if (send(client_socket, reinterpret_cast<char*>(&fsize), 4, 0) <= 0) {
-                            std::cout << "Send FileSize error." << std::endl;
+                        if (send(client_socket, "E", 1, 0) <= 0) {
+                            std::cout << "Failed to send confirm message 'E'." << std::endl;
                             break;
                         }
                         continue;
+                    }
+                    if (send(client_socket, "Y", 1, 0) <= 0) {
+                        std::cout << "Failed to send confirm message 'Y'." << std::endl;
+                        break;
                     }
                     //发送8字节信息代表文件大小
                     if (send(client_socket, reinterpret_cast<char*>(&netSize), sizeof(netSize), 0) <= 0) {
@@ -152,15 +165,22 @@ int main(void)
                         break;
                     }
                     uint32_t FileSize = ntohl(NetSize);
+                    if (account_login.empty()) {
+                        if (send(client_socket, "L", 1, 0) <= 0) {
+                            std::cout << "Failed to send confirm message 'L'." << std::endl;
+                            break;
+                        }
+                        continue;
+                    }
                     if (FileSize <= SIZELIMIT) {
                         if (send(client_socket, "Y", 1, 0) <= 0) {
-                            std::cout << "Failed to send confirm message." << std::endl;
+                            std::cout << "Failed to send confirm message 'Y'." << std::endl;
                             break;
                         }
                     }
                     else {
                         if (send(client_socket, "N", 1, 0) <= 0) {
-                            std::cout << "Failed to send confirm message." << std::endl;
+                            std::cout << "Failed to send confirm message 'N'." << std::endl;
                             break;
                         }
                     }
@@ -173,9 +193,30 @@ int main(void)
                     //path = "./files/" + filename_pure;
                     char fp[BUF] = {};
                     //std::unique_ptr<char> fp(new char[BUF]);
-                    if (recvAll(client_socket, fp, FileSize, filename_pure))
+                    if (recvAll(client_socket, fp, FileSize, filename_pure, account_login))
                         std::cout << std::endl << "Receive file Successfully." << std::endl;
                 }
+                // 客户端请求删除文件
+                else if (control_msg == "-d ") {
+                    std::string path = "./files/" + account_login;
+                    for (int i = 3;i < ret;++i)
+                        path.push_back(buffer[i]);
+                    std::string result;
+                    if (account_login.empty()) {
+                        result = "You need to log in first.";
+                    }
+                    else {
+                        if (deleteFile(path))
+                            result = "File " + path + "has been deleted successfully.";
+                        else
+                            result = "Fail to delete file";
+                    }
+                    if (send(client_socket, result.c_str(), 50, 0) <= 0) {
+                        std::cout << "Failed to send confirm message." << std::endl;
+                        break;
+                    }
+                }
+                // 客户端请求注册账号
                 else if (control_msg == "-u ") {
                     std::string account, password;
                     bool space = false;
@@ -216,7 +257,7 @@ int main(void)
                     }
                     std::cout << signup_succ << std::endl;
                 }
-                // 客户端请求登录
+                // 客户端请求登录账号
                 else if (control_msg == "-i ") {
                     std::string account, password;
                     bool space = false;
@@ -268,7 +309,8 @@ int main(void)
                         answer += line[0];
                         std::string correct;
                         if (answer == password) {
-                            correct = "Sign in successfully.";
+                            correct = "Hello," + account + "!";
+                            account_login = account;
                         }
                         else {
                             correct = "Incorrect password.";
@@ -282,6 +324,7 @@ int main(void)
             }
             // 关闭与该客户端的连接
             closesocket(client_socket);
+            account_login.clear();
             // 将 client_socket 传入线程函数
             }, client_socket);
         // 将线程设为分离状态，让其独立运行，不用在主线程 join 等待

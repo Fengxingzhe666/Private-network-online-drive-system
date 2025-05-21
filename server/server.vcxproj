@@ -131,11 +131,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\handleAll.cpp" />
+    <ClCompile Include="..\mkdir.cpp" />
     <ClCompile Include="..\ProgressBar.cpp" />
     <ClCompile Include="server.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\handleAll.h" />
+    <ClInclude Include="..\mkdir.h" />
     <ClInclude Include="..\ProgressBar.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -64,24 +64,41 @@ int main()
 				std::cout << "server disconnect." << std::endl;
 				break;
 			}
-			// 接收服务器的回显消息（文件大小）
-			uint32_t NetSize = 0;
-			// 从服务器接收数据，当服务器断开或出错时，返回值 <= 0
-			if (recv(client_socket, reinterpret_cast<char*>(&NetSize), sizeof(NetSize), 0) <= 0) {
+			char buffer[1];
+			if (recv(client_socket, buffer, 1, 0) <= 0) {
 				std::cout << "server disconnect." << std::endl;
 				break;
 			}
-			uint32_t FileSize = ntohl(NetSize);
-			std::cout << "File size: " << FileSize << " byte(s)" << std::endl;
-			if (FileSize == 0) {
-				std::cout << "Error! Server could not found the file. Or server refused to send an empty file." << std::endl;
-				continue;
+			if (buffer[0] == 'Y') {
+				// 接收服务器的回显消息（文件大小）
+				uint32_t NetSize = 0;
+				if (recv(client_socket, reinterpret_cast<char*>(&NetSize), sizeof(NetSize), 0) <= 0) {
+					std::cout << "server disconnect." << std::endl;
+					break;
+				}
+				uint32_t FileSize = ntohl(NetSize);
+				std::cout << "File size: " << FileSize << " byte(s)" << std::endl;
+				if (FileSize == 0) {
+					std::cout << "Error! Server could not found the file. Or server refused to send an empty file." << std::endl;
+					continue;
+				}
+				send(client_socket, "OK\0", 3, 0);
+				char fp[BUF] = {};
+				if (recvAll(client_socket, fp, FileSize, filename))
+					std::cout << std::endl << "Receive file Successfully." << std::endl;
 			}
-			send(client_socket, "OK\0", 3, 0);
-			char fp[BUF] = {};
-			//std::unique_ptr<char> fp(new char[BUF]);
-			if (recvAll(client_socket, fp, FileSize, filename))
-				std::cout << std::endl << "Receive file Successfully." << std::endl;
+			else if (buffer[0] == 'N') {
+				std::cout << "Error! Server could not found the file." << std::endl;
+			}
+			else if (buffer[0] == 'E') {
+				std::cout << "Error! Server refused to send an empty file." << std::endl;
+			}
+			else if (buffer[0] == 'L') {
+				std::cout << "You need to log in first." << std::endl;
+			}
+			else {
+				std::cout << "Received an unrecognized character." << std::endl;
+			}
 		}
 		// 客户端希望发送文件信息
 		else if (control_msg == "-s ") {
@@ -138,8 +155,20 @@ int main()
 					std::cout << std::endl << "File " << filename << " has been sended successfully." << std::endl;
 			}
 			//服务器拒绝接收文件
-			else {
+			else if(a[0] == 'n' || a[0] == 'N') {
 				std::cout << "Server refused this file." << std::endl;
+			}
+			else if (a[0] == 'l' || a[0] == 'L') {
+				std::cout << "You need to log in first." << std::endl;
+				continue;
+			}
+		}
+		// 客户端希望删除服务端的某个文件
+		else if (control_msg == "-d ") {
+			// 将输入的消息发送给服务器
+			if (send(client_socket, sending_str.c_str(), sending_str.size(), 0) <= 0) {
+				std::cout << "server disconnect." << std::endl;
+				break;
 			}
 		}
 		//客户端希望注册账号

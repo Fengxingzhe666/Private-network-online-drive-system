@@ -16,11 +16,12 @@ client connects to server successfully. # 提示连接成功
 ```
 -r filename.type # 从服务器端接收文件filename.type，其中type是文件后缀
 -s filename.type # 将本地文件filename.type上传到服务器，filename.type之前必须包含该文件在客户端本地的路径
+-d filename.type # 删除服务端的文件
 -u account password # 向服务器请求注册账号，后边跟着密码，注意账号密码中不允许有空格，账号和密码的长度不超过20
 -i account password # 向服务器请求登录账号，后边跟着密码
 ```
--d命令内容待完善……  
-注意如果希望使用-u和-i功能，在服务器端必须安装MySQL，并创建一个名称为“zzk”的database，然后创建一个指定结构的表，名称为“account_password”  
+**在进行其他操作前，必须使用-i命令登录一个账号**  
+注意因为使用-u和-i功能，在服务器端必须安装MySQL，并创建一个名称为“zzk”的database，然后创建一个指定结构的表，名称为“account_password”  
 MySQL的安装见：https://github.com/Fengxingzhe666/mysql_practice  
 这里建议安装时选择默认路径，否则项目中的附加包含还需修改为自定义的安装路径。  
 ## 服务器端的MySQL简单配置过程  
