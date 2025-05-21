@@ -19,6 +19,7 @@ client connects to server successfully. # 提示连接成功
 -u account password # 向服务器请求注册账号，后边跟着密码，注意账号密码中不允许有空格，账号和密码的长度不超过20
 -i account password # 向服务器请求登录账号，后边跟着密码
 ```
+-d命令内容待完善……  
 注意如果希望使用-u和-i功能，在服务器端必须安装MySQL，并创建一个名称为“zzk”的database，然后创建一个指定结构的表，名称为“account_password”  
 MySQL的安装见：https://github.com/Fengxingzhe666/mysql_practice  
 这里建议安装时选择默认路径，否则项目中的附加包含还需修改为自定义的安装路径。  
@@ -51,7 +52,7 @@ mysql> create table account_password(
 Query OK, 0 rows affected (0.02 sec)
 
 ```
--d命令内容待完善……  
+
 ## g++编译工具的使用  
 Windows系统安装gcc/g++：https://blog.csdn.net/happycell188/article/details/145774606  
 （gcc和g++都是C语言的编译工具，g++更加针对c++，因此本项目主要使用g++）  
@@ -63,11 +64,18 @@ Copyright (C) 2025 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 ```
-在命令行进入client文件夹，然后输入以下编译指令进行编译：  
+如果是服务端程序，则在命令行进入server文件夹，然后输入以下编译指令进行编译：  
 ```
-g++ client.cpp ../ProgressBar.h ../ProgressBar.cpp ../handleAll.h ../handleAll.cpp -o demo -lws2_32
+g++ server.cpp ../ProgressBar.h ../ProgressBar.cpp ../handleAll.h ../handleAll.cpp -o server.exe -I "C:/Program Files/MySQL/MySQL Server 5.6/include" -L "C:/Program Files/MySQL/MySQL Server 5.6/lib"  -lmysql -lws2_32
 ```
-g++会在client目录中编译出demo.exe文件，运行这个exe文件，客户端就开始运行了。  
-此外如果有Visual Studio，是可以直打开.vcxproj文件的，项目里的文件已经打包好了。  
+g++会在server目录中编译出server.exe文件，运行这个exe文件，服务端就开始运行了。
+
+如果是客户端程序，则在命令行进入client文件夹，然后输入以下编译指令进行编译：  
+```
+g++ client.cpp ../ProgressBar.h ../ProgressBar.cpp ../handleAll.h ../handleAll.cpp -o client.exe -lws2_32
+```
+g++会在client目录中编译出client.exe文件，运行这个exe文件，客户端就开始运行了。 
+
+此外如果有Visual Studio，是可以直打开.vcxproj文件进行编译的，项目里的文件已经打包好了。  
  
-2025.5.20  
+2025.5.21  

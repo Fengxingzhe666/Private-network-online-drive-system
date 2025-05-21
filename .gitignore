@@ -3,10 +3,12 @@ client/client
 client/.vs
 client/files/*
 !client/files/README.md
+client/client.exe
 server/.vs
 server/files/*
 !server/files/README.md
 !server/files/sample.jpg
 server/x64
 server/server
+server/server.exe
 *.sln
