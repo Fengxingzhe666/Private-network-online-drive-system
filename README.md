@@ -21,7 +21,8 @@ client connects to server successfully. # 提示连接成功
 ```
 注意如果希望使用-u和-i功能，在服务器端必须安装MySQL，并创建一个名称为“zzk”的database，然后创建一个指定结构的表，名称为“account_password”  
 MySQL的安装见：https://github.com/Fengxingzhe666/mysql_practice  
-服务器端的MySQL简单配置过程：  
+这里建议安装时选择默认路径，否则项目中的附加包含还需修改为自定义的安装路径。  
+## 服务器端的MySQL简单配置过程  
 ```
 PS C:\Users\username\Desktop>mysql -uroot -p
 Enter password: ******
@@ -50,6 +51,23 @@ mysql> create table account_password(
 Query OK, 0 rows affected (0.02 sec)
 
 ```
-
 -d命令内容待完善……  
+## g++编译工具的使用  
+Windows系统安装gcc/g++：https://blog.csdn.net/happycell188/article/details/145774606  
+（gcc和g++都是C语言的编译工具，g++更加针对c++，因此本项目主要使用g++）  
+在本地下载后解压，并在高级系统设置->环境变量->系统变量->PATH->添加安装的gcc的文件夹bin路径，然后在命令行输入：g++ --version，如果能看到版本反馈信息，就说明安装成功了。  
+```
+PS D:\App\Private-network-online-drive-system> g++ --version
+g++.exe (MinGW-W64 x86_64-ucrt-mcf-seh, built by Brecht Sanders, r1) 15.1.0
+Copyright (C) 2025 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+```
+在命令行进入client文件夹，然后输入以下编译指令进行编译：  
+```
+g++ client.cpp ../ProgressBar.h ../ProgressBar.cpp ../handleAll.h ../handleAll.cpp -o demo -lws2_32
+```
+g++会在client目录中编译出demo.exe文件，运行这个exe文件，客户端就开始运行了。  
+此外如果有Visual Studio，是可以直打开.vcxproj文件的，项目里的文件已经打包好了。  
+ 
 2025.5.20  
