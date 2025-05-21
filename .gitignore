@@ -6,6 +6,7 @@ client/files/*
 server/.vs
 server/files/*
 !server/files/README.md
+!server/files/sample.jpg
 server/x64
 server/server
 *.sln
