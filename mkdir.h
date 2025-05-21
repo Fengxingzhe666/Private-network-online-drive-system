@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MKDIR
+#define MKDIR
 #include <iostream>
 #include <string>
 #include <algorithm>
@@ -11,3 +12,5 @@
 //  参  数	:  [in] std::string folder  --  { 需要创建的路径 }
 // ************************************************************************
 void MkDir(std::string folder);
+
+#endif

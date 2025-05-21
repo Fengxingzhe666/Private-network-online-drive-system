@@ -1,4 +1,5 @@
-#pragma once
+#ifndef HANDLEALL
+#define HANDLEALL
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -15,3 +16,5 @@ bool recvAll(SOCKET s, char* p, size_t len, const std::string& filename, const s
 bool sendAll(SOCKET s, const char* p, size_t len);
 std::string getfilename(const std::string& str);
 bool deleteFile(const std::string& filename);
+
+#endif
