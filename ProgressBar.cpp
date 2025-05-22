@@ -18,3 +18,10 @@ void showProgressBar(int progress, int total) {
     std::cout << "] " << static_cast<int>(ratio * 100.0) << "%\r";
     std::cout.flush();
 }
+//Ñ­»·Õ¹Ê¾progressbar
+void circle_disp_progressbar(const int& progress, const int& total,const bool& flag) {
+    while (flag) {
+        showProgressBar(progress, total);
+        Sleep(1000);
+    }
+}

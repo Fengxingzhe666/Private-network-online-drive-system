@@ -146,12 +146,10 @@ int main(void)
                     //std::unique_ptr<char> buf(new char[BUF]);
                     size_t n;
                     bool send_successful = true;
-                    while ((n = fread(buf, 1, sizeof buf, fp)) > 0) {
-                        if (!sendAll(client_socket, buf, n)) {
-                            std::cout << "Failed to send file." << std::endl;
-                            send_successful = false;
-                            break;
-                        }
+                    if (!sendAll(client_socket, buf, fsize, fp)) {
+                        std::cout << std::endl << "Failed to send file." << std::endl;
+                        send_successful = false;
+                        break;
                     }
                     fclose(fp);
                     if (send_successful)
