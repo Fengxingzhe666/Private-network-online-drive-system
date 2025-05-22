@@ -42,13 +42,13 @@ bool recvAll(SOCKET s, char* p, size_t len, const std::string& filename, const s
 		}
 		showProgressBar(len - remain_byte, len);
 	});
-	thbar.detach();
 	while (remain_byte > 0) {
 		int n = recv(s, p, BUF, 0);
 		if (n <= 0) {
 			int wsaErr = WSAGetLastError();
 			std::cerr << "Receive failed, code " << wsaErr << "\n";
 			bar_continue = false;
+			thbar.join();
 			return false;
 		}
 		file.write(p, n);
@@ -56,6 +56,7 @@ bool recvAll(SOCKET s, char* p, size_t len, const std::string& filename, const s
 		//showProgressBar(len - remain_byte, len);
 	}
 	bar_continue = false;
+	thbar.join();
 	file.close();
 	return true;
 }
@@ -113,7 +114,7 @@ std::string getfilename(const std::string& str) {
 bool deleteFile(const std::string& filename) {
 	int result = std::remove(filename.c_str());
 	if (result == 0) {
-		std::cout << "File " << filename << "has been deleted successfully." << std::endl;
+		std::cout << "File " << filename << " has been deleted successfully." << std::endl;
 		return true;
 	}
 	else {
