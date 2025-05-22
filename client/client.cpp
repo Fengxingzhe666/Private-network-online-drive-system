@@ -167,7 +167,7 @@ int main()
 				std::cout << "server disconnect." << std::endl;
 				break;
 			}
-			char bac[50] = { 0 };
+			char bac[128] = { '\0'};
 			if (recv(client_socket, bac, sizeof(bac), 0) <= 0) {
 				std::cout << "Failed to receive confirmation message from server." << std::endl;
 				break;

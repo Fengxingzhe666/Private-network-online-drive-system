@@ -207,11 +207,11 @@ int main(void)
                     }
                     else {
                         if (deleteFile(path))
-                            result = "File " + path + "has been deleted successfully.";
+                            result = "File " + path + " has been deleted successfully.";
                         else
                             result = "Fail to delete file";
                     }
-                    if (send(client_socket, result.c_str(), 50, 0) <= 0) {
+                    if (send(client_socket, result.c_str(), result.size(), 0) <= 0) {
                         std::cout << "Failed to send confirm message." << std::endl;
                         break;
                     }
