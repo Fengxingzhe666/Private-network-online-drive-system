@@ -41,7 +41,8 @@ bool recvAll(SOCKET s, char* p, size_t len, const std::string& filename, const s
 			Sleep(100);
 		}
 		showProgressBar(len - remain_byte, len);
-		});
+	});
+	thbar.detach();
 	while (remain_byte > 0) {
 		int n = recv(s, p, BUF, 0);
 		if (n <= 0) {
@@ -55,7 +56,6 @@ bool recvAll(SOCKET s, char* p, size_t len, const std::string& filename, const s
 		//showProgressBar(len - remain_byte, len);
 	}
 	bar_continue = false;
-	thbar.join();
 	file.close();
 	return true;
 }
@@ -71,11 +71,11 @@ bool sendAll(SOCKET s, char* p, size_t len, FILE* stream) {
 		}
 		showProgressBar(len - remain_byte, len);
 		});
-
 	while (remain_byte) {
 		int ret = fread(p, 1, BUF, stream);
 		if (ret <= 0) {
 			bar_continue = false;
+			thbar.join();
 			return false;
 		}
 		//Ñ­»··¢ËÍret×Ö½Ú
@@ -84,6 +84,7 @@ bool sendAll(SOCKET s, char* p, size_t len, FILE* stream) {
 			int n = send(s, &p[idx], ret, 0);
 			if (n <= 0){
 				bar_continue = false;
+				thbar.join();
 				return false;
 			}
 			idx += n, ret -= n;
