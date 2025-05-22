@@ -51,6 +51,25 @@ bool sendAll(SOCKET s, const char* p, size_t len) {
 	}
 	return true;
 }
+
+bool sendAll(SOCKET s, char* p, size_t len, FILE* stream) {
+	size_t remain_byte = len;
+	while (remain_byte) {
+		int ret = fread(p, 1, BUF, stream);
+		if (ret <= 0)
+			return false;
+		//循环发送ret字节
+		int idx = 0;
+		while (ret > 0) {
+			int n = send(s, &p[idx], ret, 0);
+			if (n <= 0)
+				return false;
+			idx += n, ret -= n;
+			remain_byte -= n;
+			showProgressBar(len - remain_byte, len);
+		}
+	}
+}
 //从一长串路径字符串中提取文件名称（包含后缀）
 std::string getfilename(const std::string& str) {
 	std::string filename;

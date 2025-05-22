@@ -198,7 +198,7 @@ int main(void)
                 }
                 // 客户端请求删除文件
                 else if (control_msg == "-d ") {
-                    std::string path = "./files/" + account_login;
+                    std::string path = "./files/" + account_login + "/";
                     for (int i = 3;i < ret;++i)
                         path.push_back(buffer[i]);
                     std::string result;

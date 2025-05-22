@@ -141,14 +141,11 @@ int main()
 				}*/
 				// ·Ö¿é·¢ËÍ
 				char buf[BUF];
-				size_t n;
 				bool send_successful = true;
-				while ((n = fread(buf, 1, sizeof buf, fp)) > 0) {
-					if (!sendAll(client_socket, buf, n)) {
-						std::cout << "Failed to send file." << std::endl;
-						send_successful = false;
-						break;
-					}
+				if (!sendAll(client_socket, buf, fsize, fp)) {
+					std::cout << std::endl << "Failed to send file." << std::endl;
+					send_successful = false;
+					break;
 				}
 				fclose(fp);
 				if (send_successful)
@@ -170,6 +167,12 @@ int main()
 				std::cout << "server disconnect." << std::endl;
 				break;
 			}
+			char bac[50] = { 0 };
+			if (recv(client_socket, bac, sizeof(bac), 0) <= 0) {
+				std::cout << "Failed to receive confirmation message from server." << std::endl;
+				break;
+			}
+			std::cout << bac << std::endl;
 		}
 		//¿Í»§¶ËÏ£Íû×¢²áÕËºÅ
 		else if (control_msg == "-u ") {
