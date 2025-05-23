@@ -1,5 +1,6 @@
 #include "handleAll.h"
 
+// 接收文件函数，不包含账户名，由client端调用
 bool recvAll(SOCKET s, char* p, size_t len, const std::string& filename) {
 	std::ofstream file("./files/" + filename, std::ios::out | std::ios::binary);
 	size_t remain_byte = len;
@@ -17,18 +18,18 @@ bool recvAll(SOCKET s, char* p, size_t len, const std::string& filename) {
 			int wsaErr = WSAGetLastError();
 			std::cerr << "Receive failed, code " << wsaErr << "\n";
 			bar_continue = false;
+			thbar.join();
 			return false;
 		}
 		file.write(p, n);
 		remain_byte -= n;
-		//showProgressBar(len - remain_byte, len);
 	}
 	bar_continue = false;
 	thbar.join();
 	file.close();
 	return true;
 }
-
+// 接收文件函数，包含账户名，由server端调用
 bool recvAll(SOCKET s, char* p, size_t len, const std::string& filename, const std::string& account) {
 	std::string path = "./files/" + account + "/" + filename;
 	MkDir("./files/" + account);
@@ -90,7 +91,6 @@ bool sendAll(SOCKET s, char* p, size_t len, FILE* stream) {
 			}
 			idx += n, ret -= n;
 			remain_byte -= n;
-			//showProgressBar(len - remain_byte, len);
 		}
 	}
 	bar_continue = false;
