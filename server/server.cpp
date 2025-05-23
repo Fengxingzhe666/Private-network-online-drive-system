@@ -14,7 +14,7 @@
 #include "../handleAll.h"
 #pragma comment(lib, "ws2_32.lib") // 告诉编译器链接 ws2_32.lib（Windows Sockets 库）
 //#pragma comment(lib, "Mswsock.lib")// TransmitFile
-#define err(errMsg)	cout<<errMsg<<"failed,code "<<WSAGetLastError()<<" line:"<<__LINE__<<endl;
+#define err(errMsg)	std::cout<<errMsg<<"failed,code "<<WSAGetLastError()<<" line:"<<__LINE__<<std::endl;
 
 using namespace std;       // 使用标准命名空间
 
@@ -34,31 +34,31 @@ int main(void)
     WSADATA wsaData;
     // 初始化 Winsock，指定使用版本 2.2
     WSAStartup(MAKEWORD(2, 2), &wsaData);
-    // 创建服务器监听套接字，AF_INET=IPv4，SOCK_STREAM=TCP
-    SOCKET listen_socket = socket(AF_INET, SOCK_STREAM, 0); 
+    // 创建服务器监听套接字，AF_INET6=IPv6，SOCK_STREAM=TCP
+    SOCKET listen_socket = socket(AF_INET6, SOCK_STREAM, 0); 
     if (listen_socket == INVALID_SOCKET) {
         // 若返回 INVALID_SOCKET 表示创建失败，打印错误，退出程序
         cerr << "error" << endl;
         return -1;
     }
     // 定义并初始化本地地址结构体
-    struct sockaddr_in local = { 0 };
-    // 协议族：IPv4
-    local.sin_family = AF_INET;
+    sockaddr_in6 local = { 0 };
+    // 协议族：IPv6
+    local.sin6_family = AF_INET6;
     // 绑定到本机所有可用网卡(0.0.0.0)
-    local.sin_addr.s_addr = INADDR_ANY;
+    local.sin6_addr = in6addr_any;
     // 设置监听端口，htons 用于端口字节序转换
-    local.sin_port = htons(PORT);
+    local.sin6_port = htons(PORT);
     // 将监听套接字与本地地址结构体绑定
-    if (bind(listen_socket, (struct sockaddr*)&local, sizeof local) == INVALID_SOCKET) {
+    if (bind(listen_socket, (sockaddr*)&local, sizeof local) == INVALID_SOCKET) {
         // 若返回 INVALID_SOCKET 表示绑定失败
-        cerr << "error" << endl;
+        err("Bind error!");
         return -1;
     }
     // 启动监听，第二个参数 backlog=128 表示排队等待连接的最大队列长度
     if (listen(listen_socket, 128) == -1) {
         // 如果 listen 失败，打印错误信息，退出程序
-        cerr << "error" << endl;
+        err("Listen error!");
         return -1;
     }
     std::cout << "Server starts,waitting for connection between client ..." << endl;
