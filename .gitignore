@@ -1,0 +1,11 @@
+client/x64
+client/client
+client/.vs
+client/files/*
+client/client.exe
+server/.vs
+server/files/*
+server/x64
+server/server
+server/server.exe
+*.sln

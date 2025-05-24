@@ -9,7 +9,7 @@
 
 using namespace std;
 
-constexpr int PORT = 50000;
+constexpr int PORT = 5000;
 
 int main()
 {
