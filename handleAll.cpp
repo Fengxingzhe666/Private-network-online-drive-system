@@ -87,6 +87,7 @@ bool sendAll(SOCKET s, char* p, size_t len, FILE* stream) {
 			if (n <= 0){
 				bar_continue = false;
 				thbar.join();
+				err("sendAll() function failed.");
 				return false;
 			}
 			idx += n, ret -= n;
