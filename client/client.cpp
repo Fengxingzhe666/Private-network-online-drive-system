@@ -1,4 +1,4 @@
-//client.cpp                         --Ä£Äâ¿Í»§¶Ë
+//client.cpp                         --æ¨¡æ‹Ÿå®¢æˆ·ç«¯
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include<cstring>
@@ -13,31 +13,31 @@ constexpr int PORT = 50000;
 
 int main()
 {
-	// ´æ´¢ WSAStartup ³õÊ¼»¯ĞÅÏ¢µÄ½á¹¹Ìå
+	// å­˜å‚¨ WSAStartup åˆå§‹åŒ–ä¿¡æ¯çš„ç»“æ„ä½“
 	WSADATA wsaData;
-	// ³õÊ¼»¯ Winsock£¬Ö¸¶¨Ê¹ÓÃ°æ±¾ 2.2
+	// åˆå§‹åŒ– Winsockï¼ŒæŒ‡å®šä½¿ç”¨ç‰ˆæœ¬ 2.2
 	WSAStartup(MAKEWORD(2, 2), &wsaData);
 
-	// ´´½¨¿Í»§¶ËÌ×½Ó×Ö£¬AF_INET=IPv4£¬SOCK_STREAM=TCP
+	// åˆ›å»ºå®¢æˆ·ç«¯å¥—æ¥å­—ï¼ŒAF_INET=IPv4ï¼ŒSOCK_STREAM=TCP
 	SOCKET client_socket = socket(AF_INET6, SOCK_STREAM, 0);
 	if (client_socket == INVALID_SOCKET) {
-		// Èô´´½¨Ê§°Ü£¬´òÓ¡´íÎó²¢ÍË³ö
+		// è‹¥åˆ›å»ºå¤±è´¥ï¼Œæ‰“å°é”™è¯¯å¹¶é€€å‡º
 		cerr << "Creat SOCKET error" << endl;
 		return -1;
 	}
 
-	// ´æ´¢·şÎñÆ÷ĞÅÏ¢µÄµØÖ·½á¹¹
+	// å­˜å‚¨æœåŠ¡å™¨ä¿¡æ¯çš„åœ°å€ç»“æ„
 	struct sockaddr_in6 target = { 0 };
-	// Ğ­Òé×å£ºIPv4
+	// åè®®æ—ï¼šIPv4
 	target.sin6_family = AF_INET6;
-	// Ä¿±ê¶Ë¿ÚºÅ£¨ÒªÓë·şÎñÆ÷±£³ÖÒ»ÖÂ£©
+	// ç›®æ ‡ç«¯å£å·ï¼ˆè¦ä¸æœåŠ¡å™¨ä¿æŒä¸€è‡´ï¼‰
 	target.sin6_port = htons(PORT);
-	// inet_pton: ½«×Ö·û´®ĞÎÊ½µÄ IP("127.0.0.1") ×ªÎªÍøÂç×Ö½ÚĞòµØÖ·²¢´æ´¢µ½ sin_addr.s_addr
-	// Èç¹ûÄãµÄ±àÒëÆ÷»ò»·¾³²»Ö§³Ö inet_pton£¬¿ÉÓÃ inet_addr("127.0.0.1")
-	inet_pton(AF_INET6, "2409:8a44:536:5ad1:d4c1:5248:8cf2:371", &target.sin6_addr);
+	// inet_pton: å°†å­—ç¬¦ä¸²å½¢å¼çš„ IP("127.0.0.1") è½¬ä¸ºç½‘ç»œå­—èŠ‚åºåœ°å€å¹¶å­˜å‚¨åˆ° sin_addr.s_addr
+	// å¦‚æœä½ çš„ç¼–è¯‘å™¨æˆ–ç¯å¢ƒä¸æ”¯æŒ inet_ptonï¼Œå¯ç”¨ inet_addr("127.0.0.1")
+	inet_pton(AF_INET6, "::1", &target.sin6_addr);
 	//target.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-	// Á¬½Óµ½·şÎñÆ÷£¬ÈôÊ§°Ü·µ»Ø INVALID_SOCKET
+	// è¿æ¥åˆ°æœåŠ¡å™¨ï¼Œè‹¥å¤±è´¥è¿”å› INVALID_SOCKET
 	if (connect(client_socket, (struct sockaddr*)&target, sizeof target) == INVALID_SOCKET) {
 		std::cerr << "Connection error, WSA " << WSAGetLastError() << std::endl;
 		closesocket(client_socket);
@@ -45,40 +45,40 @@ int main()
 	}
 	cout << "client connects to server successfully." << endl;
 
-	// ½øÈëÑ­»·£¬²»¶Ï´Ó¿ØÖÆÌ¨ÊäÈëÏûÏ¢²¢·¢ËÍ¸ø·şÎñÆ÷
+	// è¿›å…¥å¾ªç¯ï¼Œä¸æ–­ä»æ§åˆ¶å°è¾“å…¥æ¶ˆæ¯å¹¶å‘é€ç»™æœåŠ¡å™¨
 	while (true) {
-		// ÓÃÓÚ´æ´¢ÓÃ»§ÊäÈëµÄÏûÏ¢
+		// ç”¨äºå­˜å‚¨ç”¨æˆ·è¾“å…¥çš„æ¶ˆæ¯
 		char buffer1[1024] = { 0 };
 		cout << "enter: ";
 		cin >> buffer1;
-		// ½«ÊäÈëµÄÏûÏ¢·¢ËÍ¸ø·şÎñÆ÷
+		// å°†è¾“å…¥çš„æ¶ˆæ¯å‘é€ç»™æœåŠ¡å™¨
 		send(client_socket, buffer1, strlen(buffer1), 0);
 
-		// ÓÃÓÚ½ÓÊÕ·şÎñÆ÷µÄ»ØÏÔÏûÏ¢
+		// ç”¨äºæ¥æ”¶æœåŠ¡å™¨çš„å›æ˜¾æ¶ˆæ¯
 		char buffer2[1024] = { 0 };
-		// ´Ó·şÎñÆ÷½ÓÊÕÊı¾İ
+		// ä»æœåŠ¡å™¨æ¥æ”¶æ•°æ®
 		int ret = recv(client_socket, buffer2, sizeof buffer2, 0);
-		// µ±·şÎñÆ÷¶Ï¿ª»ò³ö´íÊ±£¬·µ»ØÖµ <= 0
+		// å½“æœåŠ¡å™¨æ–­å¼€æˆ–å‡ºé”™æ—¶ï¼Œè¿”å›å€¼ <= 0
 		if (ret <= 0) {
 			cout << "server disconnect." << endl;
 		}
-		// ´òÓ¡·şÎñÆ÷»ØÏÔµÄÏûÏ¢
+		// æ‰“å°æœåŠ¡å™¨å›æ˜¾çš„æ¶ˆæ¯
 		cout << buffer2 << endl;
 
 		//recvFile(client_socket, "./files/1.txt");
 
 	}
-	// ½áÊøºó¹Ø±ÕÌ×½Ó×Ö
+	// ç»“æŸåå…³é—­å¥—æ¥å­—
 	closesocket(client_socket);
 	return 0;
 }
 /*
-	¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª
-		°æÈ¨ÉùÃ÷£º±¾ÎÄÎª²©Ö÷Ô­´´ÎÄÕÂ£¬×ñÑ­ CC 4.0 BY - SA °æÈ¨Ğ­Òé£¬×ªÔØÇë¸½ÉÏÔ­ÎÄ³ö´¦Á´½ÓºÍ±¾ÉùÃ÷¡£
-		Ô­ÎÄÁ´½Ó£ºhttps ://blog.csdn.net/2301_82023822/article/details/144704929
+	â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”
+		ç‰ˆæƒå£°æ˜ï¼šæœ¬æ–‡ä¸ºåšä¸»åŸåˆ›æ–‡ç« ï¼Œéµå¾ª CC 4.0 BY - SA ç‰ˆæƒåè®®ï¼Œè½¬è½½è¯·é™„ä¸ŠåŸæ–‡å‡ºå¤„é“¾æ¥å’Œæœ¬å£°æ˜ã€‚
+		åŸæ–‡é“¾æ¥ï¼šhttps ://blog.csdn.net/2301_82023822/article/details/144704929
 */
 /*
-´úÂëËµÃ÷£¬client.cpp£º
-Í¬Ñùµ÷ÓÃ WSAStartup ³õÊ¼»¯ÍøÂç¿â£¬´´½¨Ò»¸öÌ×½Ó×Ö£¬Ê¹ÓÃ connect() Á¬½Óµ½·şÎñÆ÷µÄ 127.0.0.1:9999
-ÔÚÑ­»·Àï²»Í£µØ´ÓÓÃ»§ÊäÈë»ñÈ¡×Ö·û´®²¢·¢ËÍ¸ø·şÎñÆ÷£¬È»ºóµÈ´ı·şÎñÆ÷µÄ»ØÏÔĞÅÏ¢²¢´òÓ¡¡£
+ä»£ç è¯´æ˜ï¼Œclient.cppï¼š
+åŒæ ·è°ƒç”¨ WSAStartup åˆå§‹åŒ–ç½‘ç»œåº“ï¼Œåˆ›å»ºä¸€ä¸ªå¥—æ¥å­—ï¼Œä½¿ç”¨ connect() è¿æ¥åˆ°æœåŠ¡å™¨çš„ 127.0.0.1:9999
+åœ¨å¾ªç¯é‡Œä¸åœåœ°ä»ç”¨æˆ·è¾“å…¥è·å–å­—ç¬¦ä¸²å¹¶å‘é€ç»™æœåŠ¡å™¨ï¼Œç„¶åç­‰å¾…æœåŠ¡å™¨çš„å›æ˜¾ä¿¡æ¯å¹¶æ‰“å°ã€‚
 */
