@@ -1,1 +1,1 @@
-  代码来自原文链接：https ://blog.csdn.net/2301_82023822/article/details/144704929  
+修改ipv4连接方式为ipv6的方法演示，已经通过本机回环测试。
