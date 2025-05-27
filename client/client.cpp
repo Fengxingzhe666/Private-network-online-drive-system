@@ -167,6 +167,30 @@ int main()
 			}
 			std::cout << bac << std::endl;
 		}
+		else if (control_msg == "-c ") {
+			// 将输入的消息发送给服务器
+			if (send(client_socket, sending_str.c_str(), sending_str.size(), 0) <= 0) {
+				std::cout << "server disconnect." << std::endl;
+				break;
+			}
+			uint32_t netsize = 0;
+			if (recv(client_socket, reinterpret_cast<char*>(&netsize), sizeof(netsize), 0) <= 0) {
+				err("Failed to receive string length message.");
+				break;
+			}
+			uint32_t len = ntohl(netsize);
+			if (len > 0) {
+				std::string file_info(len, '\0');
+				if (recv(client_socket, const_cast<char*>(file_info.c_str()), len, 0) <= 0) {
+					err("Failed to receive file info.");
+					break;
+				}
+				printf("%s", file_info.c_str());
+			}
+			else {
+				std::cout << "The server storage is empty now." << std::endl;
+			}
+		}
 		//客户端希望注册账号
 		else if (control_msg == "-u ") {
 			// 将输入的消息发送给服务器

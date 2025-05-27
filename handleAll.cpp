@@ -103,7 +103,7 @@ std::string getfilename(const std::string& str) {
 	std::string filename;
 	int last = 0;
 	for (int i = str.size() - 1;i >= 0;--i) {
-		if (str[i] == '/') {
+		if (str[i] == '/' || str[i] == '\\') {
 			last = i + 1;
 			break;
 		}

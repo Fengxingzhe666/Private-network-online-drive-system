@@ -186,6 +186,8 @@ int main(void)
                     for (int i = 4;i < ret;++i) {
                         filename.push_back(buffer[i]);
                     }
+                    //替换反斜杠为斜杠
+                    std::replace(filename.begin(), filename.end(), '\\', '/');
                     filename_pure = getfilename(filename);
                     //path = "./files/" + filename_pure;
                     char fp[BUF] = {};
@@ -211,6 +213,30 @@ int main(void)
                     if (send(client_socket, result.c_str(), result.size(), 0) <= 0) {
                         std::cout << "Failed to send confirm message." << std::endl;
                         break;
+                    }
+                }
+                // 客户端请求查看已有文件信息
+                else if (control_msg == "-c ") {
+                    vector<std::string> file_info;
+                    std::string path = "./files/" + account_login;
+                    //std::replace(path.begin(), path.end(), '/', '\\');
+                    getFiles(path, file_info);
+                    std::string send_back;
+                    for (std::string str : file_info) {
+                        /*std::replace(str.begin(), str.end(), '\\', '/');*/
+                        str = getfilename(str);
+                        send_back += str + '\n';
+                    }
+                    uint32_t netsize = htonl(send_back.size());
+                    if (send(client_socket, reinterpret_cast<char*>(&netsize), sizeof(netsize), 0) <= 0) {
+                        err("Failed to send string length");
+                        break;
+                    }
+                    if (!send_back.empty()) {
+                        if (send(client_socket, send_back.c_str(), send_back.size(), 0) <= 0) {
+                            err("Failed to send filename info.");
+                            break;
+                        }
                     }
                 }
                 // 客户端请求注册账号

@@ -31,9 +31,38 @@ void MkDir(std::string folder)
 			sub.clear();//清空文件夹名称，然后才能存下一级的文件夹名称
 		}
 	}
+	// 该函数原文链接：https ://blog.csdn.net/hss2799/article/details/131529800
 }
-/*
-————————————————
-版权声明：本文为博主原创文章，遵循 CC 4.0 BY - SA 版权协议，转载请附上原文出处链接和本声明。
-原文链接：https ://blog.csdn.net/hss2799/article/details/131529800
-*/
+
+void getFiles(string path, vector<string>& files)
+{
+    //文件句柄  
+	intptr_t hFile = 0;
+    //文件信息，声明一个存储文件信息的结构体  
+    struct _finddata_t fileinfo;
+    string p;//字符串，存放路径
+    if ((hFile = _findfirst(p.assign(path).append("\\*").c_str(), &fileinfo)) != -1)//若查找成功则入
+    {
+        do
+        {
+            //如果是目录,迭代之（即文件夹内还有文件夹）  
+            if ((fileinfo.attrib &  _A_SUBDIR))
+            {
+                //文件名不等于"."&&文件名不等于".."
+                //.表示当前目录
+                //..表示当前目录的父目录
+                //判断时，两者都要忽略，不然就无限递归跳不出去了！
+                if (strcmp(fileinfo.name, ".") != 0 && strcmp(fileinfo.name, "..") != 0)
+                    getFiles(p.assign(path).append("\\").append(fileinfo.name), files);
+            }
+            //如果不是,加入列表  
+            else
+            {
+                files.push_back(p.assign(path).append("\\").append(fileinfo.name));
+            }
+        } while (_findnext(hFile, &fileinfo) == 0);
+        //_findclose函数结束查找
+        _findclose(hFile);
+    }
+	// 该函数原文链接：https://blog.csdn.net/a8039974/article/details/87930602
+}
