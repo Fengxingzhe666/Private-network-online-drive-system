@@ -57,8 +57,15 @@ int main()
 	while (true) {
 		string sending_str, control_msg,filename;
 		getline(std::cin,sending_str);
-		control_msg = sending_str.substr(0, 3);
-		filename = sending_str.substr(3);
+		try {
+			control_msg = sending_str.substr(0, 3);
+			filename = sending_str.substr(3);
+		}
+		catch (std::out_of_range e) {
+			std::cout << "Invalid argument." << std::endl;
+			continue;
+		}
+		
 		// 客户端希望接收文件信息
 		if (control_msg == "-r ") {
 			// 将输入的消息发送给服务器
@@ -220,6 +227,8 @@ int main()
 			}
 			std::cout << buffer_sql << std::endl;
 		}
+		else
+			std::cout << "Invalid argument." << std::endl;
 	}
 	// 结束后关闭套接字
 	closesocket(client_socket);
