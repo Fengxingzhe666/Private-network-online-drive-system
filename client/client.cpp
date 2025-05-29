@@ -3,23 +3,22 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <memory>     //智能指针
-#include<Winsock2.h>
-#include<WS2tcpip.h>
+//#include<WS2tcpip.h>
 #include "../ProgressBar.h"
 #include "../handleAll.h"
 #pragma comment(lib, "ws2_32.lib")
-#define err(errMsg)	std::cout<<errMsg<<"failed,code "<<WSAGetLastError()<<" line:"<<__LINE__<<std::endl;
 
 using std::string;
 constexpr int PORT = 5000;
 
 int main()
 {
+	#ifdef _WIN32
 	// 存储 WSAStartup 初始化信息的结构体
 	WSADATA wsaData;
 	// 初始化 Winsock，指定使用版本 2.2
 	WSAStartup(MAKEWORD(2, 2), &wsaData);
+	#endif
 
 	addrinfo hints{}, * res, * p;
 	hints.ai_family = AF_UNSPEC;      // IPv6 优先，不行再 IPv4
@@ -42,7 +41,11 @@ int main()
 			continue;
 		if (connect(client_socket, p->ai_addr, (int)p->ai_addrlen) == 0) 
 			break;// 成功
-		closesocket(client_socket); 
+#ifdef _WIN32
+		closesocket(client_socket);
+#else
+		close(client_socket);
+#endif
 		client_socket = INVALID_SOCKET;
 	}
 	freeaddrinfo(res);
@@ -231,6 +234,10 @@ int main()
 			std::cout << "Invalid argument." << std::endl;
 	}
 	// 结束后关闭套接字
+#ifdef _WIN32
 	closesocket(client_socket);
+#else
+	close(client_socket);
+#endif
 	return 0;
 }

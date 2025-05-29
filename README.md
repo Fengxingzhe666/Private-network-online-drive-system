@@ -88,11 +88,18 @@ g++ server.cpp ../ProgressBar.h ../ProgressBar.cpp ../handleAll.h ../handleAll.c
 g++会在server目录中编译出server.exe文件，运行这个exe文件，服务端就开始运行了。
 
 如果是客户端程序，则在命令行进入client文件夹，然后输入以下编译指令进行编译：  
+windows系统：  
 ```
 g++ client.cpp ../ProgressBar.h ../ProgressBar.cpp ../handleAll.h ../handleAll.cpp ../mkdir.h ../mkdir.cpp -O3 -o client.exe -lws2_32
 ```
-g++会在client目录中编译出client.exe文件，运行这个exe文件，客户端就开始运行了。 
+linux系统：  
+```
+g++ client.cpp ../ProgressBar.h ../ProgressBar.cpp ../handleAll.h ../handleAll.cpp ../mkdir.h ../mkdir.cpp -o client -lpthread
+# 如果编译成功，就使客户端开始运行
+./client
+```
+在windows系统上，g++会在client目录中编译出client.exe文件，运行这个exe文件，客户端就开始运行了；在linux系统上，g++会编译出client文件，在命令行再运行./client后客户端开始运行。  
 
 此外如果有Visual Studio，是可以直打开.vcxproj文件进行编译的，项目里的文件已经打包好了。  
  
-2025.5.28  
+2025.5.29  

@@ -8,15 +8,18 @@ bool recvAll(SOCKET s, char* p, size_t len, const std::string& filename) {
 	std::thread thbar([&]() {
 		while (bar_continue) {
 			showProgressBar(len - remain_byte, len);
+#ifdef _WIN32
 			Sleep(100);
+#else
+			sleep(100);
+#endif
 		}
 		showProgressBar(len - remain_byte, len);
 	});
 	while (remain_byte > 0) {
 		int n = recv(s, p, BUF, 0);
 		if (n <= 0) {
-			int wsaErr = WSAGetLastError();
-			std::cerr << "Receive failed, code " << wsaErr << "\n";
+			err("Receive failed, code ");
 			bar_continue = false;
 			thbar.join();
 			return false;
@@ -39,15 +42,18 @@ bool recvAll(SOCKET s, char* p, size_t len, const std::string& filename, const s
 	std::thread thbar([&]() {
 		while (bar_continue) {
 			showProgressBar(len - remain_byte, len);
+#ifdef _WIN32
 			Sleep(100);
+#else
+			sleep(100);
+#endif
 		}
 		showProgressBar(len - remain_byte, len);
 	});
 	while (remain_byte > 0) {
 		int n = recv(s, p, BUF, 0);
 		if (n <= 0) {
-			int wsaErr = WSAGetLastError();
-			std::cerr << "Receive failed, code " << wsaErr << "\n";
+			err("Receive failed, code ");
 			bar_continue = false;
 			thbar.join();
 			return false;
@@ -69,7 +75,11 @@ bool sendAll(SOCKET s, char* p, size_t len, FILE* stream) {
 	std::thread thbar([&]() {
 		while (bar_continue) {
 			showProgressBar(len - remain_byte, len);
+#ifdef _WIN32
 			Sleep(100);
+#else
+			sleep(100);
+#endif
 		}
 		showProgressBar(len - remain_byte, len);
 		});
