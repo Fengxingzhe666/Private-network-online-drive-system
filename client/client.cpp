@@ -54,7 +54,7 @@ int main()
 		err("Connection timeout!");
 		return -1; 
 	}
-	std::cout << "Connect to server sucessfully." << std::endl;
+	std::cout << "Connect to server successfully." << std::endl;
 
 	// 进入循环，不断从控制台输入消息并发送给服务器
 	while (true) {
@@ -72,12 +72,12 @@ int main()
 		// 客户端希望接收文件信息
 		if (control_msg == "-r ") {
 			// 将输入的消息发送给服务器
-			if (send(client_socket, sending_str.c_str(), sending_str.size(), 0) <= 0) {
+			if (sendevery(client_socket, sending_str.c_str(), sending_str.size(), 0) == false) {
 				std::cout << "server disconnect." << std::endl;
 				break;
 			}
 			char buffer[1];
-			if (recv(client_socket, buffer, 1, 0) <= 0) {
+			if (recvevery(client_socket, buffer, 1, 0) ==false) {
 				std::cout << "server disconnect." << std::endl;
 				break;
 			}
@@ -94,7 +94,9 @@ int main()
 					std::cout << "Error! Server could not found the file. Or server refused to send an empty file." << std::endl;
 					continue;
 				}
-				send(client_socket, "OK\0", 3, 0);
+				if (sendevery(client_socket, "OK\0", 3, 0) == false) {
+					break;
+				}
 				char fp[BUF] = {};
 				if (recvAll(client_socket, fp, FileSize, filename))
 					std::cout << std::endl << "Receive file Successfully." << std::endl;
@@ -124,19 +126,19 @@ int main()
 			fseek(fp, 0, SEEK_SET);
 			uint32_t netSize = htonl(fsize);
 			// 将输入的消息发送给服务器
-			if (send(client_socket, sending_str.c_str(), sending_str.size(), 0) <= 0) {
+			if (sendevery(client_socket, sending_str.c_str(), sending_str.size(), 0) == false) {
 				std::cout << "server disconnect." << std::endl;
 				break;
 			}
 			std::cout << "File size: " << fsize << " byte(s)" << std::endl;
 			//发送文件大小
-			if (send(client_socket, reinterpret_cast<char*>(&netSize), sizeof(netSize), 0) <= 0) {
+			if (sendevery(client_socket, reinterpret_cast<char*>(&netSize), sizeof(netSize), 0) == false) {
 				std::cout << "Send FileSize error." << std::endl;
 				break;
 			}
 			char a[1] = {};
 			//接收服务器回传的确认信号（Y或者N）
-			if (recv(client_socket, a, 1, 0) <= 0) {
+			if (recvevery(client_socket, a, 1, 0) == false) {
 				std::cout << "Failed to receive confirmation message from server." << std::endl;
 				break;
 			}
@@ -166,7 +168,7 @@ int main()
 		// 客户端希望删除服务端的某个文件
 		else if (control_msg == "-d ") {
 			// 将输入的消息发送给服务器
-			if (send(client_socket, sending_str.c_str(), sending_str.size(), 0) <= 0) {
+			if (sendevery(client_socket, sending_str.c_str(), sending_str.size(), 0) == false) {
 				std::cout << "server disconnect." << std::endl;
 				break;
 			}
@@ -179,19 +181,19 @@ int main()
 		}
 		else if (control_msg == "-c ") {
 			// 将输入的消息发送给服务器
-			if (send(client_socket, sending_str.c_str(), sending_str.size(), 0) <= 0) {
+			if (sendevery(client_socket, sending_str.c_str(), sending_str.size(), 0) == false) {
 				std::cout << "server disconnect." << std::endl;
 				break;
 			}
 			uint32_t netsize = 0;
-			if (recv(client_socket, reinterpret_cast<char*>(&netsize), sizeof(netsize), 0) <= 0) {
+			if (recvevery(client_socket, reinterpret_cast<char*>(&netsize), sizeof(netsize), 0) == false) {
 				err("Failed to receive string length message.");
 				break;
 			}
 			uint32_t len = ntohl(netsize);
 			if (len > 0) {
 				std::string file_info(len, '\0');
-				if (recv(client_socket, const_cast<char*>(file_info.c_str()), len, 0) <= 0) {
+				if (recvevery(client_socket, const_cast<char*>(file_info.c_str()), len, 0) == false) {
 					err("Failed to receive file info.");
 					break;
 				}
@@ -204,12 +206,12 @@ int main()
 		//客户端希望注册账号
 		else if (control_msg == "-u ") {
 			// 将输入的消息发送给服务器
-			if (send(client_socket, sending_str.c_str(), sending_str.size(), 0) <= 0) {
+			if (sendevery(client_socket, sending_str.c_str(), sending_str.size(), 0) == false) {
 				std::cout << "server disconnect." << std::endl;
 				break;
 			}
-			char buffer_sql[100] = { 0 };
-			if (recv(client_socket, buffer_sql, 100, 0) <= 0) {
+			char buffer_sql[DEFAULT_STR_LENGTH] = { 0 };
+			if (recv(client_socket, buffer_sql, DEFAULT_STR_LENGTH, 0) <= 0) {
 				std::cout << "Failed to receive ." << std::endl;
 				break;
 			}
@@ -218,14 +220,14 @@ int main()
 		//客户端希望登录账号
 		else if (control_msg == "-i ") {
 			// 将输入的消息发送给服务器
-			if (send(client_socket, sending_str.c_str(), sending_str.size(), 0) <= 0) {
+			if (sendevery(client_socket, sending_str.c_str(), sending_str.size(), 0) == false) {
 				std::cout << "server disconnect." << std::endl;
 				break;
 			}
 			// 接收服务器的反馈
-			char buffer_sql[100] = { 0 };
-			if (recv(client_socket, buffer_sql, 100, 0) <= 0) {
-				std::cout << "Failed to receive ." << std::endl;
+			char buffer_sql[DEFAULT_STR_LENGTH] = { 0 };
+			if (recv(client_socket, buffer_sql, DEFAULT_STR_LENGTH, 0) <= 0) {
+				std::cout << "Failed to receive." << std::endl;
 				break;
 			}
 			std::cout << buffer_sql << std::endl;

@@ -135,15 +135,13 @@ int main(void)
                         break;
                     }
                     char ok[3];
-                    if (recv(client_socket, ok, 3, 0) <= 0) {
+                    if (recvevery(client_socket, ok, 3, 0) == false) {
                         std::cout << "Failed to receive OK message." << std::endl;
                         break;
                     }
                     std::cout << ok << std::endl;
                     //分块发送
                     char buf[BUF];
-                    //std::unique_ptr<char> buf(new char[BUF]);
-                    size_t n;
                     bool send_successful = true;
                     if (!sendAll(client_socket, buf, fsize, fp)) {
                         std::cout << std::endl << "Failed to send file." << std::endl;
@@ -210,7 +208,7 @@ int main(void)
                         else
                             result = "Fail to delete file";
                     }
-                    if (send(client_socket, result.c_str(), result.size(), 0) <= 0) {
+                    if (sendevery(client_socket, result.c_str(), result.size(), 0) == false) {
                         std::cout << "Failed to send confirm message." << std::endl;
                         break;
                     }
@@ -241,12 +239,12 @@ int main(void)
                             send_back += str + '\n';
                         }
                         uint32_t netsize = htonl(send_back.size());
-                        if (send(client_socket, reinterpret_cast<char*>(&netsize), sizeof(netsize), 0) <= 0) {
+                        if (sendevery(client_socket, reinterpret_cast<char*>(&netsize), sizeof(netsize), 0) == false) {
                             err("Failed to send string length");
                             break;
                         }
                         if (!send_back.empty()) {
-                            if (send(client_socket, send_back.c_str(), send_back.size(), 0) <= 0) {
+                            if (sendevery(client_socket, send_back.c_str(), send_back.size(), 0) == false) {
                                 err("Failed to send filename info.");
                                 break;
                             }
@@ -273,7 +271,7 @@ int main(void)
                     //连接
                     if (!mysql_real_connect(con, host, user, pw, databse_name, MYSQL_PORT, NULL, 0)) {
                         fprintf_s(stderr, "Failed to connect to database. Error: %s\n", mysql_error(con));
-                        send(client_socket, mysql_error(con), 100, 0);
+                        send(client_socket, mysql_error(con), DEFAULT_STR_LENGTH, 0);
                         break;
                     }
                     //设置连接的默认字符是 utf8，原始默认是 latin1，不使用可能会导致插入的中文是乱码
@@ -284,11 +282,11 @@ int main(void)
                     if (mysql_query(con, order.c_str())) {
                         //如果执行失败就打印
                         fprintf_s(stderr, "Error: %s\n", mysql_error(con));
-                        send(client_socket, mysql_error(con), 100, 0);
+                        send(client_socket, mysql_error(con), DEFAULT_STR_LENGTH, 0);
                         continue;
                     }
                     std::string signup_succ = "Sign up successfully.";
-                    if (send(client_socket, signup_succ.c_str(), signup_succ.size(), 0) <= 0) {
+                    if (sendevery(client_socket, signup_succ.c_str(), signup_succ.size(), 0) == false) {
                         std::cout << "Connection failed." << std::endl;
                         break;
                     }
@@ -314,7 +312,7 @@ int main(void)
                     //连接
                     if (!mysql_real_connect(con, host, user, pw, databse_name, MYSQL_PORT, NULL, 0)) {
                         fprintf_s(stderr, "Failed to connect to database. Error: %s\n", mysql_error(con));
-                        send(client_socket, mysql_error(con), 100, 0);
+                        send(client_socket, mysql_error(con), DEFAULT_STR_LENGTH, 0);
                         break;
                     }
                     mysql_set_character_set(con, "utf-8");
@@ -322,7 +320,7 @@ int main(void)
                     if (mysql_query(con, order.c_str())) {
                         //如果执行失败就打印
                         fprintf_s(stderr, "Error: %s\n", mysql_error(con));
-                        if (send(client_socket, mysql_error(con), 100, 0) <= 0) {
+                        if (send(client_socket, mysql_error(con), DEFAULT_STR_LENGTH, 0) <= 0) {
                             std::cout << "Failed to send MySQL error code message." << std::endl;
                             break;
                         }
@@ -337,7 +335,7 @@ int main(void)
                     //指针为空说明账号不存在
                     if (!line) {
                         const std::string account_no = "The account you input does not exist.";
-                        if (send(client_socket, account_no.c_str(), account_no.size(), 0) <= 0) {
+                        if (sendevery(client_socket, account_no.c_str(), account_no.size(), 0) == false) {
                             std::cout << "Failed to send MySQL error code message." << std::endl;
                             break;
                         }
@@ -352,7 +350,7 @@ int main(void)
                         else {
                             correct = "Incorrect password.";
                         }
-                        if (send(client_socket, correct.c_str(), correct.size(), 0) <= 0) {
+                        if (sendevery(client_socket, correct.c_str(), correct.size(), 0) == false) {
                             std::cout << "Failed to send MySQL error code message." << std::endl;
                             break;
                         }

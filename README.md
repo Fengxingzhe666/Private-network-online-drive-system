@@ -1,5 +1,5 @@
 # 模拟私有云盘系统  
-**TCP**  **SOCKET编程**  **应用层文件传输协议**  **MySQL**  
+**TCP**  **SOCKET编程**  **std::thread多线程** **应用层文件传输协议**  **MySQL** **C/S通信模型** **阻塞I/O模型并发服务器** **DNS域名解析** **windows/linux跨平台编译**    
 ## 服务端和客户端的连接方式  
 ### 公网ipv6直连  
 新的ShenJi_public_ipv6分支即采用这种策略，server端采用公网ipv6，并配置好server主机系统防火墙、路由器防火墙和光猫防火墙，然后通过购买的域名服务，将域名DNS解析为server端的公网ipv6，进行TCP连接。具体的连接配置过程详见Issue#5  

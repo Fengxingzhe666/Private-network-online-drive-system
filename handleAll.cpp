@@ -67,6 +67,19 @@ bool recvAll(SOCKET s, char* p, size_t len, const std::string& filename, const s
 	file.close();
 	return true;
 }
+//普通循环接收
+bool recvevery(SOCKET s, char* p, size_t len, int flag) {
+	int idx = 0;
+	while (len > 0) {
+		int ret = recv(s, &p[idx], len, flag);
+		if (ret <= 0) {
+			err("recv function failed.");
+			return false;
+		}
+		idx += ret, len -= ret;
+	}
+	return true;
+}
 
 bool sendAll(SOCKET s, char* p, size_t len, FILE* stream) {
 	size_t remain_byte = len;
@@ -108,6 +121,20 @@ bool sendAll(SOCKET s, char* p, size_t len, FILE* stream) {
 	thbar.join();
 	return true;
 }
+//普通循环发送
+bool sendevery(SOCKET s,const char* p,int len,int flag) {
+	int idx = 0;
+	while (len > 0) {
+		int ret = send(s, &p[idx], len, flag);
+		if (ret <= 0) {
+			err("send function failed.");
+			return false;
+		}
+		idx += ret, len -= ret;
+	}
+	return true;
+}
+
 //从一长串路径字符串中提取文件名称（包含后缀）
 std::string getfilename(const std::string& str) {
 	std::string filename;

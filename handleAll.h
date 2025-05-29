@@ -25,10 +25,13 @@
 #pragma comment(lib, "ws2_32.lib")
 
 constexpr size_t BUF = 64 * 1024;          // 分块传输大小
+constexpr int DEFAULT_STR_LENGTH = 128;    // 未知长度时，默认发送/接收字符串的长度
 
 bool recvAll(SOCKET s, char* p, size_t len, const std::string& filename);
 bool recvAll(SOCKET s, char* p, size_t len, const std::string& filename, const std::string& account);
+bool recvevery(SOCKET s, char* p, size_t len, int flag);
 bool sendAll(SOCKET s, char* p, size_t len, FILE* stream);
+bool sendevery(SOCKET s, const char* p, int len, int flag);
 std::string getfilename(const std::string& str);
 bool deleteFile(const std::string& filename);
 
