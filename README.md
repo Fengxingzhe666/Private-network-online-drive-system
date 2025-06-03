@@ -102,4 +102,4 @@ g++ client.cpp  ../ProgressBar.cpp  ../handleAll.cpp  ../mkdir.cpp -o client -lp
 
 此外如果有Visual Studio，是可以直打开.vcxproj文件进行编译的，项目里的文件已经打包好了。  
  
-2025.5.29  
+2025.6.3  
