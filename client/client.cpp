@@ -13,19 +13,19 @@ constexpr int PORT = 5000;
 
 int main()
 {
-	#ifdef _WIN32
+#ifdef _WIN32
 	// 存储 WSAStartup 初始化信息的结构体
 	WSADATA wsaData;
 	// 初始化 Winsock，指定使用版本 2.2
 	WSAStartup(MAKEWORD(2, 2), &wsaData);
-	#endif
+#endif
 
 	addrinfo hints{}, * res, * p;
 	hints.ai_family = AF_UNSPEC;      // IPv6 优先，不行再 IPv4
 	hints.ai_socktype = SOCK_STREAM;
 
 	std::string host_domain;
-	std::cout << "Enter the server's domain,now you can enter www.zzkalinet.cn" << std::endl;
+	std::cout << "Enter the server's domain or IP address,now you can enter zzkalinet.cn to connect with ShenJi." << std::endl;
 	getline(std::cin, host_domain);
 
 	if (getaddrinfo(host_domain.c_str(), std::to_string(PORT).c_str(), &hints, &res) != 0) {

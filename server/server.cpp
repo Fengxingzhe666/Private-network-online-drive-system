@@ -19,7 +19,6 @@
 using namespace std;       // 使用标准命名空间
 
 constexpr int PORT = 5000;   //端口号
-constexpr uint32_t SIZELIMIT = 1610612736;  //接收文件大小限制
 
 const char* host = "127.0.0.1";
 const char* user = "root";
@@ -41,6 +40,14 @@ int main(void)
         cerr << "error" << endl;
         return -1;
     }
+
+    int zero = 0;
+    if (setsockopt(listen_socket, IPPROTO_IPV6, IPV6_V6ONLY,
+        reinterpret_cast<char*>(&zero), sizeof(zero)) == SOCKET_ERROR) {
+        err("setsockopt IPV6_V6ONLY failed : ");
+        return -1;
+    }
+
     // 定义并初始化本地地址结构体
     sockaddr_in6 local = { 0 };
     // 协议族：IPv6
@@ -167,7 +174,7 @@ int main(void)
                         }
                         continue;
                     }
-                    if (FileSize <= SIZELIMIT) {
+                    if (FileSize < UINT32_MAX) {
                         if (send(client_socket, "Y", 1, 0) <= 0) {
                             std::cout << "Failed to send confirm message 'Y'." << std::endl;
                             break;
@@ -177,6 +184,10 @@ int main(void)
                         if (send(client_socket, "N", 1, 0) <= 0) {
                             std::cout << "Failed to send confirm message 'N'." << std::endl;
                             break;
+                        }
+                        else {
+                            std::cout << "Server refused this file." << std::endl;
+                            continue;
                         }
                     }
                     //路径转换
