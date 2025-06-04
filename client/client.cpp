@@ -87,7 +87,7 @@ int main()
 					std::cout << "server disconnect." << std::endl;
 					break;
 				}
-				uint64_t FileSize = ntohll(NetSize);
+				uint64_t FileSize = ntoh64(NetSize);
 				std::cout << "File size: " << FileSize << " byte(s)" << std::endl;
 				if (FileSize == 0) {
 					std::cout << "Error! Server could not found the file. Or server refused to send an empty file." << std::endl;
@@ -124,7 +124,7 @@ int main()
 			_fseeki64(fp, 0, SEEK_END);
 			uint64_t fsize = _ftelli64(fp);
 			_fseeki64(fp, 0, SEEK_SET);
-			uint64_t netSize = htonll(fsize);
+			uint64_t netSize = hton64(fsize);
 			// 将输入的消息发送给服务器
 			if (sendevery(client_socket, sending_str.c_str(), sending_str.size(), 0) == false) {
 				std::cout << "server disconnect." << std::endl;
@@ -190,7 +190,7 @@ int main()
 				err("Failed to receive string length message.");
 				break;
 			}
-			uint64_t len = ntohll(netsize);
+			uint64_t len = ntoh64(netsize);
 			if (len > 0) {
 				std::string file_info(len, '\0');
 				if (recvevery(client_socket, const_cast<char*>(file_info.c_str()), len, 0) == false) {

@@ -123,7 +123,7 @@ int main(void)
                     _fseeki64(fp, 0, SEEK_END);
                     uint64_t fsize = _ftelli64(fp);
                     _fseeki64(fp, 0, SEEK_SET);
-                    uint64_t netSize = htonll(fsize);
+                    uint64_t netSize = hton64(fsize);
                     if (fsize == 0) {
                         std::cout << "Empty file detected.Refuse to send back an empty file." << std::endl;
                         if (send(client_socket, "E", 1, 0) <= 0) {
@@ -166,7 +166,7 @@ int main(void)
                         std::cout << "Failed to receive FileSize." << std::endl;
                         break;
                     }
-                    uint64_t FileSize = ntohll(NetSize);
+                    uint64_t FileSize = ntoh64(NetSize);
                     if (account_login.empty()) {
                         if (send(client_socket, "L", 1, 0) <= 0) {
                             std::cout << "Failed to send confirm message 'L'." << std::endl;
@@ -228,7 +228,7 @@ int main(void)
                 else if (control_msg == "-c ") {
                     if (account_login.empty()) {
                         std::string send_back = "You need to log in first.\n";
-                        uint64_t netsize = htonll(send_back.size());
+                        uint64_t netsize = hton64(send_back.size());
                         if (send(client_socket, reinterpret_cast<char*>(&netsize), sizeof(netsize), 0) <= 0) {
                             err("Failed to send string length");
                             break;
@@ -249,7 +249,7 @@ int main(void)
                             str = getfilename(str);
                             send_back += str + '\n';
                         }
-                        uint64_t netsize = htonll(send_back.size());
+                        uint64_t netsize = hton64(send_back.size());
                         if (sendevery(client_socket, reinterpret_cast<char*>(&netsize), sizeof(netsize), 0) == false) {
                             err("Failed to send string length");
                             break;
