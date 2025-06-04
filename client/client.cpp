@@ -3,7 +3,6 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-//#include<WS2tcpip.h>
 #include "../ProgressBar.h"
 #include "../handleAll.h"
 #pragma comment(lib, "ws2_32.lib")
@@ -83,12 +82,12 @@ int main()
 			}
 			if (buffer[0] == 'Y') {
 				// 接收服务器的回显消息（文件大小）
-				uint32_t NetSize = 0;
+				uint64_t NetSize = 0;
 				if (recv(client_socket, reinterpret_cast<char*>(&NetSize), sizeof(NetSize), 0) <= 0) {
 					std::cout << "server disconnect." << std::endl;
 					break;
 				}
-				uint32_t FileSize = ntohl(NetSize);
+				uint64_t FileSize = ntohll(NetSize);
 				std::cout << "File size: " << FileSize << " byte(s)" << std::endl;
 				if (FileSize == 0) {
 					std::cout << "Error! Server could not found the file. Or server refused to send an empty file." << std::endl;
@@ -121,10 +120,11 @@ int main()
 				std::cout << "File not found!" << std::endl;
 				continue;
 			}
-			fseek(fp, 0, SEEK_END);
-			uint32_t fsize = ftell(fp);
-			fseek(fp, 0, SEEK_SET);
-			uint32_t netSize = htonl(fsize);
+			//跟文件尺寸相关的整数变量全部采用64位，防止溢出
+			_fseeki64(fp, 0, SEEK_END);
+			uint64_t fsize = _ftelli64(fp);
+			_fseeki64(fp, 0, SEEK_SET);
+			uint64_t netSize = htonll(fsize);
 			// 将输入的消息发送给服务器
 			if (sendevery(client_socket, sending_str.c_str(), sending_str.size(), 0) == false) {
 				std::cout << "server disconnect." << std::endl;
@@ -185,12 +185,12 @@ int main()
 				std::cout << "server disconnect." << std::endl;
 				break;
 			}
-			uint32_t netsize = 0;
+			uint64_t netsize = 0;
 			if (recvevery(client_socket, reinterpret_cast<char*>(&netsize), sizeof(netsize), 0) == false) {
 				err("Failed to receive string length message.");
 				break;
 			}
-			uint32_t len = ntohl(netsize);
+			uint64_t len = ntohll(netsize);
 			if (len > 0) {
 				std::string file_info(len, '\0');
 				if (recvevery(client_socket, const_cast<char*>(file_info.c_str()), len, 0) == false) {

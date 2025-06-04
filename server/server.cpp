@@ -120,10 +120,10 @@ int main(void)
                         }
                         continue;
                     }
-                    fseek(fp, 0, SEEK_END);
-                    uint32_t fsize = ftell(fp);
-                    fseek(fp, 0, SEEK_SET);
-                    uint32_t netSize = htonl(fsize);
+                    _fseeki64(fp, 0, SEEK_END);
+                    uint64_t fsize = _ftelli64(fp);
+                    _fseeki64(fp, 0, SEEK_SET);
+                    uint64_t netSize = htonll(fsize);
                     if (fsize == 0) {
                         std::cout << "Empty file detected.Refuse to send back an empty file." << std::endl;
                         if (send(client_socket, "E", 1, 0) <= 0) {
@@ -161,12 +161,12 @@ int main(void)
                 }
                 else if (control_msg == "-s ") {
                     // 接收客户端的消息（文件大小）
-                    uint32_t NetSize = 0;
+                    uint64_t NetSize = 0;
                     if (recv(client_socket, reinterpret_cast<char*>(&NetSize), sizeof(NetSize), 0) <= 0) {
                         std::cout << "Failed to receive FileSize." << std::endl;
                         break;
                     }
-                    uint32_t FileSize = ntohl(NetSize);
+                    uint64_t FileSize = ntohll(NetSize);
                     if (account_login.empty()) {
                         if (send(client_socket, "L", 1, 0) <= 0) {
                             std::cout << "Failed to send confirm message 'L'." << std::endl;
@@ -228,7 +228,7 @@ int main(void)
                 else if (control_msg == "-c ") {
                     if (account_login.empty()) {
                         std::string send_back = "You need to log in first.\n";
-                        uint32_t netsize = htonl(send_back.size());
+                        uint64_t netsize = htonll(send_back.size());
                         if (send(client_socket, reinterpret_cast<char*>(&netsize), sizeof(netsize), 0) <= 0) {
                             err("Failed to send string length");
                             break;
@@ -249,7 +249,7 @@ int main(void)
                             str = getfilename(str);
                             send_back += str + '\n';
                         }
-                        uint32_t netsize = htonl(send_back.size());
+                        uint64_t netsize = htonll(send_back.size());
                         if (sendevery(client_socket, reinterpret_cast<char*>(&netsize), sizeof(netsize), 0) == false) {
                             err("Failed to send string length");
                             break;

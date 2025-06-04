@@ -2,6 +2,7 @@
 
 // 接收文件函数，不包含账户名，由client端调用
 bool recvAll(SOCKET s, char* p, size_t len, const std::string& filename) {
+	MkDir("./files");
 	std::ofstream file("./files/" + filename, std::ios::out | std::ios::binary);
 	size_t remain_byte = len;
 	bool bar_continue = true;
