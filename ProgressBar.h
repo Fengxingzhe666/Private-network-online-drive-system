@@ -2,6 +2,6 @@
 #define PROGRESSBAR
 #include <iostream>
 
-void showProgressBar(int progress, int total);
+void showProgressBar(int64_t progress, int64_t total);
 
 #endif

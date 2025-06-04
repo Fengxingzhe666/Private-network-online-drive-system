@@ -1,10 +1,10 @@
 #include "ProgressBar.h"
 
-void showProgressBar(int progress, int total) {
+void showProgressBar(int64_t progress, int64_t total) {
     const int barWidth = 50;
 
     float ratio = static_cast<float>(progress) / total;
-    int barLength = static_cast<int>(ratio * barWidth);
+    int64_t barLength = static_cast<int64_t>(ratio * barWidth);
 
     std::cout << "[";
     for (int i = 0; i < barWidth; ++i) {
@@ -15,6 +15,6 @@ void showProgressBar(int progress, int total) {
             std::cout << " ";
         }
     }
-    std::cout << "] " << static_cast<int>(ratio * 100.0) << "%\r";
+    std::cout << "] " << static_cast<int64_t>(ratio * 100.0) << "%\r";
     std::cout.flush();
 }

@@ -122,7 +122,7 @@ bool sendAll(SOCKET s, char* p, size_t len, FILE* stream) {
 	return true;
 }
 //ÆÕÍ¨Ñ­»··¢ËÍ
-bool sendevery(SOCKET s,const char* p,int len,int flag) {
+bool sendevery(SOCKET s,const char* p,size_t len,int flag) {
 	int idx = 0;
 	while (len > 0) {
 		int ret = send(s, &p[idx], len, flag);
