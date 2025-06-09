@@ -121,9 +121,15 @@ int main()
 				continue;
 			}
 			//跟文件尺寸相关的整数变量全部采用64位，防止溢出
+#ifdef _WIN32
 			_fseeki64(fp, 0, SEEK_END);
 			uint64_t fsize = _ftelli64(fp);
 			_fseeki64(fp, 0, SEEK_SET);
+#else
+			fseeko64(fp, 0, SEEK_END);
+			uint64_t fsize = ftello64(fp);
+			fseeko64(fp, 0, SEEK_SET);
+#endif
 			uint64_t netSize = hton64(fsize);
 			// 将输入的消息发送给服务器
 			if (sendevery(client_socket, sending_str.c_str(), sending_str.size(), 0) == false) {
