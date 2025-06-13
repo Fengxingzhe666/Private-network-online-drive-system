@@ -27,6 +27,13 @@ int main(void)
         cerr << "error" << endl;
         return -1;
     }
+    // 兼容ipv4地址
+    int zero = 0;
+    if (setsockopt(listen_socket, IPPROTO_IPV6, IPV6_V6ONLY,
+        reinterpret_cast<char*>(&zero), sizeof(zero)) == SOCKET_ERROR) {
+        err("setsockopt IPV6_V6ONLY failed : ");
+        return -1;
+    }
     // 定义并初始化本地地址结构体
     sockaddr_in6 local = { 0 };
     // 协议族：IPv4

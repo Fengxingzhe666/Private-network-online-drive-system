@@ -2,6 +2,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include<cstring>
+#include <string>
 #include<Winsock2.h>
 #include<WS2tcpip.h>
 #pragma comment(lib, "ws2_32.lib")
@@ -13,37 +14,48 @@ constexpr int PORT = 5000;
 
 int main()
 {
+#ifdef _WIN32
 	// 存储 WSAStartup 初始化信息的结构体
 	WSADATA wsaData;
 	// 初始化 Winsock，指定使用版本 2.2
 	WSAStartup(MAKEWORD(2, 2), &wsaData);
+#endif
 
-	// 创建客户端套接字，AF_INET=IPv4，SOCK_STREAM=TCP
-	SOCKET client_socket = socket(AF_INET6, SOCK_STREAM, 0);
-	if (client_socket == INVALID_SOCKET) {
-		// 若创建失败，打印错误并退出
-		cerr << "Creat SOCKET error" << endl;
+	addrinfo hints{}, * res, * p;
+	hints.ai_family = AF_UNSPEC;      // IPv6 优先，不行再 IPv4
+	hints.ai_socktype = SOCK_STREAM;
+
+	std::string host_domain;
+	std::cout << "Enter the server's domain or IP address:" << std::endl;
+	getline(std::cin, host_domain);
+
+	if (getaddrinfo(host_domain.c_str(), std::to_string(PORT).c_str(), &hints, &res) != 0) {
+		printf("DNS fail\n");
 		return -1;
 	}
 
-	// 存储服务器信息的地址结构
-	struct sockaddr_in6 target = { 0 };
-	// 协议族：IPv4
-	target.sin6_family = AF_INET6;
-	// 目标端口号（要与服务器保持一致）
-	target.sin6_port = htons(PORT);
-	// inet_pton: 将字符串形式的 IP("127.0.0.1") 转为网络字节序地址并存储到 sin_addr.s_addr
-	// 如果你的编译器或环境不支持 inet_pton，可用 inet_addr("127.0.0.1")
-	inet_pton(AF_INET6, "::1", &target.sin6_addr);
-	//target.sin_addr.s_addr = inet_addr("127.0.0.1");
-
-	// 连接到服务器，若失败返回 INVALID_SOCKET
-	if (connect(client_socket, (struct sockaddr*)&target, sizeof target) == INVALID_SOCKET) {
-		std::cerr << "Connection error, WSA " << WSAGetLastError() << std::endl;
+	// 依次尝试每一个地址:contentReference[oaicite:5]{index=5}
+	SOCKET client_socket = INVALID_SOCKET;
+	for (p = res; p; p = p->ai_next) {
+		client_socket = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+		if (client_socket == INVALID_SOCKET)
+			continue;
+		if (connect(client_socket, p->ai_addr, (int)p->ai_addrlen) == 0)
+			break;// 成功
+#ifdef _WIN32
 		closesocket(client_socket);
+#else
+		close(client_socket);
+#endif
+		client_socket = INVALID_SOCKET;
+	}
+	freeaddrinfo(res);
+
+	if (client_socket == INVALID_SOCKET) {
+		err("Connection timeout!");
 		return -1;
 	}
-	cout << "client connects to server successfully." << endl;
+	std::cout << "Connect to server successfully." << std::endl;
 
 	// 进入循环，不断从控制台输入消息并发送给服务器
 	while (true) {
@@ -61,24 +73,17 @@ int main()
 		// 当服务器断开或出错时，返回值 <= 0
 		if (ret <= 0) {
 			cout << "server disconnect." << endl;
+			break;
 		}
 		// 打印服务器回显的消息
 		cout << buffer2 << endl;
-
-		//recvFile(client_socket, "./files/1.txt");
-
 	}
 	// 结束后关闭套接字
 	closesocket(client_socket);
 	return 0;
 }
 /*
-	————————————————
-		版权声明：本文为博主原创文章，遵循 CC 4.0 BY - SA 版权协议，转载请附上原文出处链接和本声明。
-		原文链接：https ://blog.csdn.net/2301_82023822/article/details/144704929
-*/
-/*
 代码说明，client.cpp：
-同样调用 WSAStartup 初始化网络库，创建一个套接字，使用 connect() 连接到服务器的 127.0.0.1:9999
+同样调用 WSAStartup 初始化网络库，创建一个套接字，使用 connect() 连接到服务器
 在循环里不停地从用户输入获取字符串并发送给服务器，然后等待服务器的回显信息并打印。
 */
