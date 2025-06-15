@@ -12,7 +12,7 @@ bool recvAll(SOCKET s, char* p, size_t len, const std::string& filename) {
 #ifdef _WIN32
 			Sleep(100);
 #else
-			sleep(100);
+			sleep(1);
 #endif
 		}
 		showProgressBar(len - remain_byte, len);
@@ -46,7 +46,7 @@ bool recvAll(SOCKET s, char* p, size_t len, const std::string& filename, const s
 #ifdef _WIN32
 			Sleep(100);
 #else
-			sleep(100);
+			sleep(1);
 #endif
 		}
 		showProgressBar(len - remain_byte, len);
@@ -92,7 +92,7 @@ bool sendAll(SOCKET s, char* p, size_t len, FILE* stream) {
 #ifdef _WIN32
 			Sleep(100);
 #else
-			sleep(100);
+			sleep(1);
 #endif
 		}
 		showProgressBar(len - remain_byte, len);
